@@ -1,0 +1,45 @@
+[package]
+name = "kimi-wire"
+version = "0.1.0"
+edition = "2021"
+authors = ["Evgeny Khodzitsky"]
+description = "Typed Rust client for the Kimi Code CLI Wire protocol"
+license = "MIT"
+repository = "https://github.com/ekhodzitsky/kimi-wire"
+keywords = ["kimi", "wire", "jsonrpc", "cli", "agent"]
+categories = ["network-programming", "command-line-utilities"]
+rust-version = "1.80"
+
+[features]
+default = ["process", "redact"]
+process = ["dep:tokio", "dep:tokio-util", "dep:tokio-stream", "dep:tracing"]
+redact = ["dep:regex"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0", features = ["preserve_order"] }
+thiserror = "2.0"
+
+# Optional: async runtime + process transport
+tokio = { version = "1.44", features = ["fs", "io-std", "io-util", "macros", "net", "process", "rt", "rt-multi-thread", "signal", "sync", "time"], optional = true }
+tokio-util = { version = "0.7", features = ["codec"], optional = true }
+tokio-stream = { version = "0.1", optional = true }
+tracing = { version = "0.1", optional = true }
+
+# Optional: secret redaction
+regex = { version = "1.11", optional = true }
+
+[dev-dependencies]
+tokio = { version = "1.44", features = ["fs", "io-std", "io-util", "macros", "net", "process", "rt", "rt-multi-thread", "signal", "sync", "time"] }
+tokio-util = { version = "0.7", features = ["codec"] }
+tokio-stream = "0.1"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+[[example]]
+name = "basic_prompt"
+required-features = ["process"]
+
+[[example]]
+name = "mock_test"
+required-features = []
