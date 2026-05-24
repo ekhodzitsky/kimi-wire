@@ -25,6 +25,43 @@ pub struct InitializeParams {
     pub hooks: Option<Vec<WireHookSubscription>>,
 }
 
+impl InitializeParams {
+    /// Create new initialize parameters with the given protocol version.
+    pub fn new(protocol_version: impl Into<String>) -> Self {
+        Self {
+            protocol_version: protocol_version.into(),
+            client: None,
+            external_tools: None,
+            capabilities: None,
+            hooks: None,
+        }
+    }
+
+    /// Set client info.
+    pub fn with_client(mut self, client: ClientInfo) -> Self {
+        self.client = Some(client);
+        self
+    }
+
+    /// Set external tools.
+    pub fn with_external_tools(mut self, tools: Vec<ExternalTool>) -> Self {
+        self.external_tools = Some(tools);
+        self
+    }
+
+    /// Set client capabilities.
+    pub fn with_capabilities(mut self, caps: ClientCapabilities) -> Self {
+        self.capabilities = Some(caps);
+        self
+    }
+
+    /// Set hook subscriptions.
+    pub fn with_hooks(mut self, hooks: Vec<WireHookSubscription>) -> Self {
+        self.hooks = Some(hooks);
+        self
+    }
+}
+
 /// Client identification info.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ClientInfo {
@@ -70,6 +107,21 @@ pub struct ExternalTool {
     pub description: String,
     /// Parameter definition in JSON Schema format.
     pub parameters: serde_json::Value,
+}
+
+/// Approval policy for tool executions.
+///
+/// Controls whether the agent must ask for user confirmation before
+/// executing a tool.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[serde(rename_all = "snake_case")]
+pub enum ApprovalPolicy {
+    /// Always ask for approval (default).
+    Human,
+    /// Never ask for approval (dangerous).
+    Yolo,
+    /// Ask only for destructive operations.
+    DestructiveOnly,
 }
 
 /// Initialize response result.

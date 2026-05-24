@@ -187,6 +187,33 @@ impl From<Event> for FlatEvent {
     }
 }
 
+impl Event {
+    /// Return the wire type name for this event.
+    ///
+    /// Matches the `type` field in the wire envelope.
+    pub fn type_name(&self) -> &'static str {
+        match self {
+            Event::TurnBegin { .. } => "TurnBegin",
+            Event::TurnEnd => "TurnEnd",
+            Event::StepBegin { .. } => "StepBegin",
+            Event::StepInterrupted => "StepInterrupted",
+            Event::CompactionBegin => "CompactionBegin",
+            Event::CompactionEnd => "CompactionEnd",
+            Event::StatusUpdate(_) => "StatusUpdate",
+            Event::ContentPart(_) => "ContentPart",
+            Event::ToolCall { .. } => "function",
+            Event::ToolCallPart { .. } => "ToolCallPart",
+            Event::ToolResult { .. } => "ToolResult",
+            Event::ApprovalResponse { .. } => "ApprovalResponse",
+            Event::SubagentEvent { .. } => "SubagentEvent",
+            Event::SteerInput { .. } => "SteerInput",
+            Event::PlanDisplay { .. } => "PlanDisplay",
+            Event::HookTriggered { .. } => "HookTriggered",
+            Event::HookResolved { .. } => "HookResolved",
+        }
+    }
+}
+
 impl From<FlatEvent> for Event {
     fn from(ev: FlatEvent) -> Self {
         match ev {

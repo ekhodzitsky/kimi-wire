@@ -32,6 +32,18 @@ impl From<Vec<ContentPart>> for UserInput {
     }
 }
 
+impl From<String> for ContentPart {
+    fn from(value: String) -> Self {
+        ContentPart::Text(TextPart { text: value })
+    }
+}
+
+impl From<&str> for ContentPart {
+    fn from(value: &str) -> Self {
+        ContentPart::Text(TextPart { text: value.to_string() })
+    }
+}
+
 // ============================================================================
 // ContentPart
 // ============================================================================
@@ -181,6 +193,76 @@ pub enum TodoStatus {
 }
 
 // ============================================================================
+// DisplayBlock builders
+// ============================================================================
+
+impl DisplayBlock {
+    /// Create a brief text display block.
+    pub fn brief(text: impl Into<String>) -> Self {
+        Self {
+            block_type: DisplayBlockType::Brief,
+            text: Some(text.into()),
+            path: None,
+            old_text: None,
+            new_text: None,
+            items: None,
+            language: None,
+            command: None,
+            data: None,
+        }
+    }
+
+    /// Create a diff display block.
+    pub fn diff(
+        path: impl Into<String>,
+        old_text: impl Into<String>,
+        new_text: impl Into<String>,
+    ) -> Self {
+        Self {
+            block_type: DisplayBlockType::Diff,
+            text: None,
+            path: Some(path.into()),
+            old_text: Some(old_text.into()),
+            new_text: Some(new_text.into()),
+            items: None,
+            language: None,
+            command: None,
+            data: None,
+        }
+    }
+
+    /// Create a todo list display block.
+    pub fn todo(items: Vec<TodoDisplayItem>) -> Self {
+        Self {
+            block_type: DisplayBlockType::Todo,
+            text: None,
+            path: None,
+            old_text: None,
+            new_text: None,
+            items: Some(items),
+            language: None,
+            command: None,
+            data: None,
+        }
+    }
+
+    /// Create a shell command display block.
+    pub fn shell(command: impl Into<String>, language: impl Into<String>) -> Self {
+        Self {
+            block_type: DisplayBlockType::Shell,
+            text: None,
+            path: None,
+            old_text: None,
+            new_text: None,
+            items: None,
+            language: Some(language.into()),
+            command: Some(command.into()),
+            data: None,
+        }
+    }
+}
+
+// ============================================================================
 // ToolReturnValue
 // ============================================================================
 
@@ -198,6 +280,37 @@ pub struct ToolReturnValue {
     /// Extra debug info.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub extras: Option<serde_json::Value>,
+}
+
+impl ToolReturnValue {
+    /// Create a successful tool return value.
+    pub fn new(message: impl Into<String>) -> Self {
+        Self {
+            is_error: false,
+            output: ToolOutput::Text(String::new()),
+            message: message.into(),
+            display: vec![],
+            extras: None,
+        }
+    }
+
+    /// Mark this return value as an error.
+    pub fn with_error(mut self) -> Self {
+        self.is_error = true;
+        self
+    }
+
+    /// Set the tool output.
+    pub fn with_output(mut self, output: impl Into<ToolOutput>) -> Self {
+        self.output = output.into();
+        self
+    }
+
+    /// Add a display block.
+    pub fn with_display(mut self, block: DisplayBlock) -> Self {
+        self.display.push(block);
+        self
+    }
 }
 
 /// Tool output can be plain text or an array of content parts.
