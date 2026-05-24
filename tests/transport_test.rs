@@ -366,3 +366,22 @@ fn test_max_wire_line_length_value() {
         16 * 1024 * 1024
     );
 }
+
+#[tokio::test]
+async fn test_max_wire_line_length_rejects_oversized_line() {
+    use tokio_stream::StreamExt;
+    use tokio_util::codec::{FramedRead, LinesCodec};
+
+    let max = kimi_wire::transport::MAX_WIRE_LINE_LENGTH;
+    let data = vec![b'x'; max + 1];
+    let cursor = std::io::Cursor::new(data);
+    let mut framed = FramedRead::new(cursor, LinesCodec::new_with_max_length(max));
+
+    let result = framed.next().await;
+    assert!(
+        result.is_some(),
+        "FramedRead should yield an error for oversized line"
+    );
+    let err = result.unwrap();
+    assert!(err.is_err(), "expected codec error for line > {max} bytes");
+}
