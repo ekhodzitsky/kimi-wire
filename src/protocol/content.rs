@@ -140,6 +140,10 @@ pub struct DisplayBlock {
     /// New text for a diff.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub new_text: Option<String>,
+    /// Whether this diff block is a summary (shows line count instead of actual diff).
+    /// Added in Wire protocol v1.8.
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub is_summary: Option<bool>,
     /// Todo list items.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub items: Option<Vec<TodoDisplayItem>>,
@@ -205,6 +209,7 @@ impl DisplayBlock {
             path: None,
             old_text: None,
             new_text: None,
+            is_summary: None,
             items: None,
             language: None,
             command: None,
@@ -224,6 +229,7 @@ impl DisplayBlock {
             path: Some(path.into()),
             old_text: Some(old_text.into()),
             new_text: Some(new_text.into()),
+            is_summary: None,
             items: None,
             language: None,
             command: None,
@@ -239,6 +245,7 @@ impl DisplayBlock {
             path: None,
             old_text: None,
             new_text: None,
+            is_summary: None,
             items: Some(items),
             language: None,
             command: None,
@@ -254,6 +261,7 @@ impl DisplayBlock {
             path: None,
             old_text: None,
             new_text: None,
+            is_summary: None,
             items: None,
             language: Some(language.into()),
             command: Some(command.into()),

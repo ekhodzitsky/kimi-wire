@@ -228,7 +228,7 @@ async fn test_transport_wire_client_initialize_success() {
     let (transport, mut other) = ChannelTransport::pair();
     let mut client = TransportWireClient::new(transport);
 
-    let params = InitializeParams::new("1.7");
+    let params = InitializeParams::new("1.10");
 
     // Spawn a tiny responder.
     let responder = tokio::spawn(async move {
@@ -240,7 +240,7 @@ async fn test_transport_wire_client_initialize_success() {
             jsonrpc: JsonRpcVersion::default(),
             id: req["id"].as_str().unwrap().to_string(),
             result: InitializeResult {
-                protocol_version: "1.7".to_string(),
+                protocol_version: "1.10".to_string(),
                 server: ServerInfo { name: "kimi".to_string(), version: "0.1".to_string() },
                 slash_commands: vec![],
                 external_tools: None,
@@ -252,7 +252,7 @@ async fn test_transport_wire_client_initialize_success() {
     });
 
     let result = client.initialize(params).await.unwrap();
-    assert_eq!(result.protocol_version, "1.7");
+    assert_eq!(result.protocol_version, "1.10");
     assert!(client.is_handshake_done());
     responder.await.unwrap();
 }
@@ -262,7 +262,7 @@ async fn test_transport_wire_client_initialize_method_not_found() {
     let (transport, mut other) = ChannelTransport::pair();
     let mut client = TransportWireClient::new(transport);
 
-    let params = InitializeParams::new("1.7");
+    let params = InitializeParams::new("1.10");
 
     let responder = tokio::spawn(async move {
         let line = other.read_line().await.unwrap().unwrap();
@@ -291,7 +291,7 @@ async fn test_transport_wire_client_initialize_other_error() {
     let (transport, mut other) = ChannelTransport::pair();
     let mut client = TransportWireClient::new(transport);
 
-    let params = InitializeParams::new("1.7");
+    let params = InitializeParams::new("1.10");
 
     let responder = tokio::spawn(async move {
         let line = other.read_line().await.unwrap().unwrap();
@@ -320,7 +320,7 @@ async fn test_transport_wire_client_initialize_stream_closed() {
     let mut client = TransportWireClient::new(transport);
     drop(other);
 
-    let params = InitializeParams::new("1.7");
+    let params = InitializeParams::new("1.10");
     let err = client.initialize(params).await.unwrap_err();
     assert!(matches!(err, WireError::StreamClosed));
 }

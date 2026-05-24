@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Wire protocol v1.10 support: `StepRetry` event (v1.10), `BtwBegin` / `BtwEnd` events (v1.9), and `is_summary` field on `DisplayBlock::Diff` (v1.8).
 - Unit and integration tests for `InMemoryWireClient`, `TransportWireClient`, `ChannelTransport`, builders, and error conversions.
 - `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, issue/PR templates.
 - CI coverage job via `cargo-tarpaulin` + Codecov upload.

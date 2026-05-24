@@ -9,7 +9,7 @@ use super::content::UserInput;
 /// Initialize request parameters.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct InitializeParams {
-    /// Protocol version string (e.g. "1.7").
+    /// Protocol version string (e.g. "1.10").
     pub protocol_version: String,
     /// Client identification.
     #[serde(skip_serializing_if = "Option::is_none")]

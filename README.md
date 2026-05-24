@@ -77,7 +77,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Protocol version
 
-This crate targets **Wire protocol version 1.7** as documented by Moonshot AI. It includes forward-compatible `Option<T>` fields for newer extensions.
+This crate targets **Wire protocol version 1.10** as documented by Moonshot AI. It includes forward-compatible `Option<T>` fields for newer extensions.
 
 ## MSRV
 

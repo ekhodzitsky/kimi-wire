@@ -25,6 +25,23 @@ pub enum Event {
     },
     /// The current step was interrupted (e.g. by user input).
     StepInterrupted,
+    /// The current step attempt failed and will be retried.
+    ///
+    /// Added in Wire protocol v1.10.
+    StepRetry {
+        /// Step number.
+        n: u32,
+        /// Next attempt number, 1-based.
+        next_attempt: u32,
+        /// Maximum number of attempts for this step.
+        max_attempts: u32,
+        /// Seconds to wait before retrying.
+        wait_s: u32,
+        /// Exception class name that triggered the retry.
+        error_type: String,
+        /// HTTP status code (if available).
+        status_code: Option<u32>,
+    },
     /// Context compaction has started.
     CompactionBegin,
     /// Context compaction has finished.
@@ -82,6 +99,26 @@ pub enum Event {
         /// The steering input.
         user_input: UserInput,
     },
+    /// A side question (`/btw`) has started processing.
+    ///
+    /// Added in Wire protocol v1.9.
+    BtwBegin {
+        /// Unique ID to pair with the corresponding BtwEnd.
+        id: String,
+        /// The user's original side question text.
+        question: String,
+    },
+    /// A side question (`/btw`) has finished processing.
+    ///
+    /// Added in Wire protocol v1.9.
+    BtwEnd {
+        /// Unique ID matching the corresponding BtwBegin.
+        id: String,
+        /// The LLM's response text, or null if it failed.
+        response: Option<String>,
+        /// Error message if the side question failed.
+        error: Option<String>,
+    },
     /// Plan display content.
     PlanDisplay {
         /// Display content.
@@ -124,6 +161,15 @@ pub(crate) enum FlatEvent {
     TurnEnd,
     StepBegin { n: u32 },
     StepInterrupted,
+    StepRetry {
+        n: u32,
+        next_attempt: u32,
+        max_attempts: u32,
+        wait_s: u32,
+        error_type: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        status_code: Option<u32>,
+    },
     CompactionBegin,
     CompactionEnd,
     StatusUpdate(StatusUpdate),
@@ -158,6 +204,14 @@ pub(crate) enum FlatEvent {
         event: SubagentEventPayload,
     },
     SteerInput { user_input: UserInput },
+    BtwBegin { id: String, question: String },
+    BtwEnd {
+        id: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        response: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        error: Option<String>,
+    },
     PlanDisplay { content: String, file_path: String },
     HookTriggered { event: String, target: String, hook_count: u32 },
     HookResolved { event: String, target: String, action: HookAction, reason: String, duration_ms: u64 },
@@ -170,6 +224,7 @@ impl From<Event> for FlatEvent {
             Event::TurnEnd => FlatEvent::TurnEnd,
             Event::StepBegin { n } => FlatEvent::StepBegin { n },
             Event::StepInterrupted => FlatEvent::StepInterrupted,
+            Event::StepRetry { n, next_attempt, max_attempts, wait_s, error_type, status_code } => FlatEvent::StepRetry { n, next_attempt, max_attempts, wait_s, error_type, status_code },
             Event::CompactionBegin => FlatEvent::CompactionBegin,
             Event::CompactionEnd => FlatEvent::CompactionEnd,
             Event::StatusUpdate(s) => FlatEvent::StatusUpdate(s),
@@ -180,6 +235,8 @@ impl From<Event> for FlatEvent {
             Event::ApprovalResponse { request_id, response, feedback } => FlatEvent::ApprovalResponse { request_id, response, feedback },
             Event::SubagentEvent { parent_tool_call_id, agent_id, subagent_type, event } => FlatEvent::SubagentEvent { parent_tool_call_id, agent_id, subagent_type, event },
             Event::SteerInput { user_input } => FlatEvent::SteerInput { user_input },
+            Event::BtwBegin { id, question } => FlatEvent::BtwBegin { id, question },
+            Event::BtwEnd { id, response, error } => FlatEvent::BtwEnd { id, response, error },
             Event::PlanDisplay { content, file_path } => FlatEvent::PlanDisplay { content, file_path },
             Event::HookTriggered { event, target, hook_count } => FlatEvent::HookTriggered { event, target, hook_count },
             Event::HookResolved { event, target, action, reason, duration_ms } => FlatEvent::HookResolved { event, target, action, reason, duration_ms },
@@ -197,6 +254,7 @@ impl Event {
             Event::TurnEnd => "TurnEnd",
             Event::StepBegin { .. } => "StepBegin",
             Event::StepInterrupted => "StepInterrupted",
+            Event::StepRetry { .. } => "StepRetry",
             Event::CompactionBegin => "CompactionBegin",
             Event::CompactionEnd => "CompactionEnd",
             Event::StatusUpdate(_) => "StatusUpdate",
@@ -207,6 +265,8 @@ impl Event {
             Event::ApprovalResponse { .. } => "ApprovalResponse",
             Event::SubagentEvent { .. } => "SubagentEvent",
             Event::SteerInput { .. } => "SteerInput",
+            Event::BtwBegin { .. } => "BtwBegin",
+            Event::BtwEnd { .. } => "BtwEnd",
             Event::PlanDisplay { .. } => "PlanDisplay",
             Event::HookTriggered { .. } => "HookTriggered",
             Event::HookResolved { .. } => "HookResolved",
@@ -221,6 +281,7 @@ impl From<FlatEvent> for Event {
             FlatEvent::TurnEnd => Event::TurnEnd,
             FlatEvent::StepBegin { n } => Event::StepBegin { n },
             FlatEvent::StepInterrupted => Event::StepInterrupted,
+            FlatEvent::StepRetry { n, next_attempt, max_attempts, wait_s, error_type, status_code } => Event::StepRetry { n, next_attempt, max_attempts, wait_s, error_type, status_code },
             FlatEvent::CompactionBegin => Event::CompactionBegin,
             FlatEvent::CompactionEnd => Event::CompactionEnd,
             FlatEvent::StatusUpdate(s) => Event::StatusUpdate(s),
@@ -231,6 +292,8 @@ impl From<FlatEvent> for Event {
             FlatEvent::ApprovalResponse { request_id, response, feedback } => Event::ApprovalResponse { request_id, response, feedback },
             FlatEvent::SubagentEvent { parent_tool_call_id, agent_id, subagent_type, event } => Event::SubagentEvent { parent_tool_call_id, agent_id, subagent_type, event },
             FlatEvent::SteerInput { user_input } => Event::SteerInput { user_input },
+            FlatEvent::BtwBegin { id, question } => Event::BtwBegin { id, question },
+            FlatEvent::BtwEnd { id, response, error } => Event::BtwEnd { id, response, error },
             FlatEvent::PlanDisplay { content, file_path } => Event::PlanDisplay { content, file_path },
             FlatEvent::HookTriggered { event, target, hook_count } => Event::HookTriggered { event, target, hook_count },
             FlatEvent::HookResolved { event, target, action, reason, duration_ms } => Event::HookResolved { event, target, action, reason, duration_ms },

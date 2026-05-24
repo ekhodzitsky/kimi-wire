@@ -133,8 +133,8 @@ fn test_tool_return_value_with_display() {
 
 #[test]
 fn test_initialize_params_new() {
-    let params = InitializeParams::new("1.7");
-    assert_eq!(params.protocol_version, "1.7");
+    let params = InitializeParams::new("1.10");
+    assert_eq!(params.protocol_version, "1.10");
     assert!(params.client.is_none());
     assert!(params.external_tools.is_none());
     assert!(params.capabilities.is_none());
@@ -143,7 +143,7 @@ fn test_initialize_params_new() {
 
 #[test]
 fn test_initialize_params_builder_chain() {
-    let params = InitializeParams::new("1.7")
+    let params = InitializeParams::new("1.10")
         .with_client(ClientInfo { name: "test".to_string(), version: Some("0.1".to_string()) })
         .with_external_tools(vec![ExternalTool {
             name: "tool".to_string(),
@@ -200,6 +200,7 @@ fn test_event_all_variants_roundtrip() {
         Event::TurnEnd,
         Event::StepBegin { n: 3 },
         Event::StepInterrupted,
+        Event::StepRetry { n: 1, next_attempt: 2, max_attempts: 3, wait_s: 5, error_type: "RateLimitError".to_string(), status_code: Some(429) },
         Event::CompactionBegin,
         Event::CompactionEnd,
         Event::StatusUpdate(StatusUpdate { context_usage: Some(0.5), context_tokens: Some(100), max_context_tokens: Some(1000), token_usage: Some(TokenUsage { input_other: 10, output: 20, input_cache_read: 5, input_cache_creation: 2 }), message_id: Some("msg-1".to_string()), plan_mode: Some(false) }),
@@ -210,6 +211,8 @@ fn test_event_all_variants_roundtrip() {
         Event::ApprovalResponse { request_id: "ar-1".to_string(), response: ApprovalResponseKind::ApproveForSession, feedback: Some("ok".to_string()) },
         Event::SubagentEvent { parent_tool_call_id: Some("ptc-1".to_string()), agent_id: Some("a-1".to_string()), subagent_type: Some("type".to_string()), event: SubagentEventPayload { type_name: "TurnBegin".to_string(), payload: serde_json::json!({}) } },
         Event::SteerInput { user_input: UserInput::Parts(vec![ContentPart::Text(TextPart { text: "steer".to_string() })]) },
+        Event::BtwBegin { id: "btw-1".to_string(), question: "side q".to_string() },
+        Event::BtwEnd { id: "btw-1".to_string(), response: Some("answer".to_string()), error: None },
         Event::PlanDisplay { content: "plan".to_string(), file_path: "/tmp/plan.md".to_string() },
         Event::HookTriggered { event: "ev".to_string(), target: "tgt".to_string(), hook_count: 5 },
         Event::HookResolved { event: "ev".to_string(), target: "tgt".to_string(), action: HookAction::Block, reason: "reason".to_string(), duration_ms: 100 },

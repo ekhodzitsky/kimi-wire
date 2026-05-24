@@ -239,7 +239,7 @@ async fn test_initialize_sets_handshake_done() {
     let mut client = InMemoryWireClient::new();
     assert!(!client.is_handshake_done());
     let result = client
-        .initialize(InitializeParams::new("1.7"))
+        .initialize(InitializeParams::new("1.10"))
         .await
         .unwrap();
     assert!(client.is_handshake_done());

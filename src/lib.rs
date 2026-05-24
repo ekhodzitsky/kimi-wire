@@ -52,7 +52,7 @@ pub use client::{InMemoryWireClient, WireClient};
 pub use error::WireError;
 
 /// The latest wire protocol version supported by this crate.
-pub const WIRE_PROTOCOL_VERSION: &str = "1.7";
+pub const WIRE_PROTOCOL_VERSION: &str = "1.10";
 
 /// Legacy protocol version used when the server does not support `initialize`.
 pub const WIRE_PROTOCOL_LEGACY_VERSION: &str = "legacy/no-handshake";

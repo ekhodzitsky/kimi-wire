@@ -44,6 +44,7 @@ proptest! {
             path: None,
             old_text: None,
             new_text: None,
+            is_summary: None,
             items: None,
             language: None,
             command: None,

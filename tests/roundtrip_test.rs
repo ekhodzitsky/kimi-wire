@@ -8,7 +8,7 @@ fn test_jsonrpc_request_roundtrip() {
         method: "initialize".to_string(),
         id: "init-1".to_string(),
         params: InitializeParams {
-            protocol_version: "1.7".to_string(),
+            protocol_version: "1.10".to_string(),
             client: Some(ClientInfo {
                 name: "test-client".to_string(),
                 version: Some("1.0.0".to_string()),
@@ -24,7 +24,7 @@ fn test_jsonrpc_request_roundtrip() {
     let json = serde_json::to_string(&req).unwrap();
     assert!(json.contains("\"jsonrpc\":\"2.0\""));
     assert!(json.contains("\"method\":\"initialize\""));
-    assert!(json.contains("\"protocol_version\":\"1.7\""));
+    assert!(json.contains("\"protocol_version\":\"1.10\""));
     let de: JsonRpcRequest<InitializeParams> = serde_json::from_str(&json).unwrap();
     assert_eq!(de, req);
 }
@@ -110,6 +110,7 @@ fn test_request_approval_roundtrip() {
             path: None,
             old_text: None,
             new_text: None,
+            is_summary: None,
             items: None,
             language: None,
             command: None,
@@ -140,6 +141,7 @@ fn test_display_block_unknown_roundtrip() {
         path: None,
         old_text: None,
         new_text: None,
+        is_summary: None,
         items: None,
         language: None,
         command: None,
