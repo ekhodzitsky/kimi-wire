@@ -5,3 +5,6 @@ Cargo.lock
 .DS_Store
 *.profraw
 cobertura.xml
+/fuzz/target
+/fuzz/corpus
+/fuzz/artifacts

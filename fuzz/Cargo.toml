@@ -1,0 +1,31 @@
+[package]
+name = "kimi-wire-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+kimi-wire = { path = "..", features = ["process", "redact"] }
+serde_json = "1.0"
+
+[[bin]]
+name = "event_roundtrip"
+path = "fuzz_targets/event_roundtrip.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "request_roundtrip"
+path = "fuzz_targets/request_roundtrip.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "raw_wire_message_roundtrip"
+path = "fuzz_targets/raw_wire_message_roundtrip.rs"
+test = false
+doc = false

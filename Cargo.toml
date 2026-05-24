@@ -12,7 +12,7 @@ rust-version = "1.80"
 
 [features]
 default = ["process", "redact"]
-process = ["dep:tokio", "dep:tokio-util", "dep:tokio-stream", "dep:tracing"]
+process = ["dep:tokio-util", "dep:tokio-stream", "dep:tracing"]
 redact = ["dep:regex"]
 
 [dependencies]
@@ -20,8 +20,10 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = ["preserve_order"] }
 thiserror = "2.0"
 
-# Optional: async runtime + process transport
-tokio = { version = "1.44", features = ["fs", "io-std", "io-util", "macros", "net", "process", "rt", "rt-multi-thread", "signal", "sync", "time"], optional = true }
+# Core async runtime (required by WireClient trait and InMemoryWireClient)
+tokio = { version = "1.44", features = ["fs", "io-std", "io-util", "macros", "net", "process", "rt", "rt-multi-thread", "signal", "sync", "time"] }
+
+# Optional: process transport extras
 tokio-util = { version = "0.7", features = ["codec"], optional = true }
 tokio-stream = { version = "0.1", optional = true }
 tracing = { version = "0.1", optional = true }
@@ -30,7 +32,6 @@ tracing = { version = "0.1", optional = true }
 regex = { version = "1.11", optional = true }
 
 [dev-dependencies]
-tokio = { version = "1.44", features = ["fs", "io-std", "io-util", "macros", "net", "process", "rt", "rt-multi-thread", "signal", "sync", "time"] }
 tokio-util = { version = "0.7", features = ["codec"] }
 tokio-stream = "0.1"
 tracing = "0.1"
