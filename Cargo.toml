@@ -9,6 +9,12 @@ repository = "https://github.com/ekhodzitsky/kimi-wire"
 keywords = ["kimi", "wire", "jsonrpc", "cli", "agent"]
 categories = ["network-programming", "command-line-utilities"]
 rust-version = "1.80"
+exclude = [
+    ".git",
+    ".omc",
+    "target",
+    "fuzz/target",
+]
 
 [features]
 default = ["process", "redact"]
