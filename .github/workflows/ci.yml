@@ -33,6 +33,19 @@ jobs:
         with:
           command: check advisories licenses bans sources
 
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@cargo-tarpaulin
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo tarpaulin --all-features --out xml --timeout 120
+      - uses: codecov/codecov-action@v4
+        with:
+          files: ./cobertura.xml
+          fail_ci_if_error: false
+
   bench:
     runs-on: ubuntu-latest
     steps:

@@ -251,28 +251,55 @@ struct EventEnvelope {
 
 impl Serialize for Event {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let flat = FlatEvent::from(self.clone());
-        let mut value = serde_json::to_value(&flat).map_err(serde::ser::Error::custom)?;
-        let obj = value
-            .as_object_mut()
-            .ok_or_else(|| serde::ser::Error::custom("expected object"))?;
-        let type_name = obj
-            .remove("type")
-            .and_then(|v| v.as_str().map(String::from))
-            .ok_or_else(|| serde::ser::Error::custom("missing type"))?;
-        EventEnvelope { type_name, payload: value }.serialize(serializer)
+        match self {
+            // ContentPart carries its own "type" field (e.g. "text", "image_url").
+            // We must not strip it, otherwise deserialization fails.
+            Event::ContentPart(part) => {
+                let payload = serde_json::to_value(part).map_err(serde::ser::Error::custom)?;
+                EventEnvelope {
+                    type_name: "ContentPart".to_string(),
+                    payload,
+                }
+                .serialize(serializer)
+            }
+            _ => {
+                let flat = FlatEvent::from(self.clone());
+                let mut value = serde_json::to_value(&flat).map_err(serde::ser::Error::custom)?;
+                let obj = value
+                    .as_object_mut()
+                    .ok_or_else(|| serde::ser::Error::custom("expected object"))?;
+                let type_name = obj
+                    .remove("type")
+                    .and_then(|v| v.as_str().map(String::from))
+                    .ok_or_else(|| serde::ser::Error::custom("missing type"))?;
+                EventEnvelope { type_name, payload: value }.serialize(serializer)
+            }
+        }
     }
 }
 
 impl<'de> Deserialize<'de> for Event {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         let envelope = EventEnvelope::deserialize(deserializer)?;
-        let mut value = envelope.payload;
-        if let Some(obj) = value.as_object_mut() {
-            obj.insert("type".to_string(), serde_json::Value::String(envelope.type_name));
+        match envelope.type_name.as_str() {
+            "ContentPart" => {
+                let part: ContentPart =
+                    serde_json::from_value(envelope.payload).map_err(serde::de::Error::custom)?;
+                Ok(Event::ContentPart(part))
+            }
+            _ => {
+                let mut value = envelope.payload;
+                if let Some(obj) = value.as_object_mut() {
+                    obj.insert(
+                        "type".to_string(),
+                        serde_json::Value::String(envelope.type_name),
+                    );
+                }
+                let flat: FlatEvent =
+                    serde_json::from_value(value).map_err(serde::de::Error::custom)?;
+                Ok(Event::from(flat))
+            }
         }
-        let flat: FlatEvent = serde_json::from_value(value).map_err(serde::de::Error::custom)?;
-        Ok(Event::from(flat))
     }
 }
 

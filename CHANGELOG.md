@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Unit and integration tests for `InMemoryWireClient`, `TransportWireClient`, `ChannelTransport`, builders, and error conversions.
+- `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, issue/PR templates.
+- CI coverage job via `cargo-tarpaulin` + Codecov upload.
+- Release workflow for automatic crates.io publish on git tags.
+- `rustfmt.toml`, `clippy.toml`, and `Justfile` for local development.
+
+### Fixed
+
+- `Event::ContentPart` serde roundtrip: the inner `ContentPart` carries its own `"type"` field, which conflicted with the `Event` envelope format.
+
 ## [0.1.0] - 2026-05-21
 
 ### Added

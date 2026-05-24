@@ -3,6 +3,7 @@
 [![CI](https://github.com/ekhodzitsky/kimi-wire/actions/workflows/ci.yml/badge.svg)](https://github.com/ekhodzitsky/kimi-wire/actions/workflows/ci.yml)
 [![crates.io](https://img.shields.io/crates/v/kimi-wire.svg)](https://crates.io/crates/kimi-wire)
 [![docs.rs](https://docs.rs/kimi-wire/badge.svg)](https://docs.rs/kimi-wire)
+[![codecov](https://codecov.io/gh/ekhodzitsky/kimi-wire/branch/main/graph/badge.svg)](https://codecov.io/gh/ekhodzitsky/kimi-wire)
 
 Typed Rust client for the [Kimi Code CLI Wire protocol](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/wire-protocol.html).
 
