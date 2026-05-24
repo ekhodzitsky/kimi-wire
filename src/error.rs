@@ -1,6 +1,16 @@
 use std::time::Duration;
 
 /// Errors that can occur when interacting with the Kimi Wire protocol.
+///
+/// ADR: `std::io::Error` and `serde_json::Error` are flattened to `String`
+/// variants (`Io(String)`, `JsonParse(String)`) rather than preserved with
+/// `#[source]`. This is a deliberate trade-off: `WireError` implements
+/// `Clone + PartialEq`, which is required for test ergonomics (comparing
+/// expected vs actual errors, injecting errors into mock clients). Dynamic
+/// error types (`Box<dyn std::error::Error>`) are neither `Clone` nor
+/// `PartialEq`, and `#[source]` would make the enum non-cloneable. Callers
+/// still receive the full error message; the cause chain is simply collapsed
+/// into the display string at the boundary.
 #[derive(thiserror::Error, Debug, Clone, PartialEq)]
 pub enum WireError {
     /// The wire stream closed unexpectedly.
