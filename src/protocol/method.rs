@@ -215,9 +215,16 @@ pub enum PromptStatus {
     Cancelled,
     /// Turn reached the step limit.
     MaxStepsReached,
-    /// The turn is still pending (observed in some server implementations).
+    /// The turn is still pending.
+    ///
+    /// Non-standard: observed in some server implementations. Not part of the
+    /// official v1.10 spec, which only defines `finished`, `cancelled`, and
+    /// `max_steps_reached`.
     Pending,
     /// An unexpected end-of-stream occurred.
+    ///
+    /// Non-standard: observed in some server implementations. Not part of the
+    /// official v1.10 spec.
     UnexpectedEof,
 }
 
