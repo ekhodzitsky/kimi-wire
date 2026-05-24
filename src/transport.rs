@@ -124,14 +124,15 @@ impl<T: Transport> WireClient for TransportWireClient<T> {
                 return decode_raw_response(msg, expected_id);
             }
 
-            match self.read_raw_message().await? {
-                msg if msg.id.as_deref() == Some(expected_id) => {
-                    return decode_raw_response(msg, expected_id);
-                }
-                other => {
-                    self.pending_messages.push_back(other);
-                }
+            let line = match self.transport.read_line().await? {
+                Some(line) => line,
+                None => return Err(WireError::StreamClosed),
+            };
+            let msg: RawWireMessage = serde_json::from_str(&line).map_err(WireError::from)?;
+            if msg.id.as_deref() == Some(expected_id) {
+                return decode_raw_response(msg, expected_id);
             }
+            self.pending_messages.push_back(msg);
         }
     }
 
@@ -248,6 +249,7 @@ fn decode_raw_response<T: DeserializeOwned>(
 // ============================================================================
 
 /// A transport backed by a child process's stdin/stdout.
+#[derive(Debug)]
 pub struct ChildProcessTransport {
     #[allow(dead_code)]
     child: Child,

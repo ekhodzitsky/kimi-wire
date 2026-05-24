@@ -120,9 +120,80 @@ async fn test_transport_wire_client_read_raw_message_timeout() {
     assert!(matches!(err, WireError::Timeout(d) if d == Duration::from_millis(10)));
 }
 
-// Note: read_response out-of-order buffering is covered by client_test.rs
-// (InMemoryWireClient). TransportWireClient's response matching is exercised
-// indirectly via the high-level prompt/replay/steer/set_plan_mode/cancel tests.
+#[tokio::test]
+async fn test_transport_wire_client_read_response() {
+    let (transport, mut other) = ChannelTransport::pair();
+    let mut client = TransportWireClient::new(transport);
+
+    let msg = RawWireMessage {
+        jsonrpc: JsonRpcVersion::default(),
+        id: Some("req-1".to_string()),
+        method: None,
+        params: None,
+        result: Some(serde_json::json!({"status": "finished"})),
+        error: None,
+    };
+    other.write_line(&serde_json::to_string(&msg).unwrap()).await.unwrap();
+
+    let result = client.read_response::<PromptResult>("req-1").await.unwrap();
+    assert_eq!(result.status, PromptStatus::Finished);
+}
+
+#[tokio::test]
+async fn test_transport_wire_client_read_response_buffers_out_of_order() {
+    let (transport, mut other) = ChannelTransport::pair();
+    let mut client = TransportWireClient::new(transport);
+
+    let msg1 = RawWireMessage {
+        jsonrpc: JsonRpcVersion::default(),
+        id: Some("other".to_string()),
+        method: None,
+        params: None,
+        result: Some(serde_json::json!({"status": "finished"})),
+        error: None,
+    };
+    let msg2 = RawWireMessage {
+        jsonrpc: JsonRpcVersion::default(),
+        id: Some("wanted".to_string()),
+        method: None,
+        params: None,
+        result: Some(serde_json::json!({"status": "cancelled"})),
+        error: None,
+    };
+
+    other.write_line(&serde_json::to_string(&msg1).unwrap()).await.unwrap();
+    other.write_line(&serde_json::to_string(&msg2).unwrap()).await.unwrap();
+
+    let result: PromptResult = client.read_response("wanted").await.unwrap();
+    assert_eq!(result.status, PromptStatus::Cancelled);
+
+    // The other message should still be reachable from the internal buffer.
+    let result: PromptResult = client.read_response("other").await.unwrap();
+    assert_eq!(result.status, PromptStatus::Finished);
+}
+
+#[tokio::test]
+async fn test_transport_wire_client_read_response_error() {
+    let (transport, mut other) = ChannelTransport::pair();
+    let mut client = TransportWireClient::new(transport);
+
+    let msg = RawWireMessage {
+        jsonrpc: JsonRpcVersion::default(),
+        id: Some("err".to_string()),
+        method: None,
+        params: None,
+        result: None,
+        error: Some(JsonRpcError {
+            code: -32600,
+            message: "bad".to_string(),
+            data: None,
+        }),
+    };
+    other.write_line(&serde_json::to_string(&msg).unwrap()).await.unwrap();
+
+    let err = client.read_response::<PromptResult>("err").await.unwrap_err();
+    assert!(matches!(err, WireError::RequestFailed { code: -32600, message } if message == "bad"));
+}
 
 #[tokio::test]
 async fn test_transport_wire_client_send_response() {
