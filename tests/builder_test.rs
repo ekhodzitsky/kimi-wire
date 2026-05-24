@@ -178,7 +178,7 @@ fn test_event_type_name() {
     assert_eq!(Event::CompactionEnd.type_name(), "CompactionEnd");
     assert_eq!(Event::StatusUpdate(StatusUpdate { context_usage: None, context_tokens: None, max_context_tokens: None, token_usage: None, message_id: None, plan_mode: None }).type_name(), "StatusUpdate");
     assert_eq!(Event::ContentPart(ContentPart::Text(TextPart { text: "".to_string() })).type_name(), "ContentPart");
-    assert_eq!(Event::ToolCall { id: "".to_string(), function: ToolCallFunction { name: "".to_string(), arguments: None }, extras: None }.type_name(), "function");
+    assert_eq!(Event::ToolCall { id: "".to_string(), function: ToolCallFunction { name: "".to_string(), arguments: None }, extras: None }.type_name(), "ToolCall");
     assert_eq!(Event::ToolCallPart { arguments_part: None }.type_name(), "ToolCallPart");
     assert_eq!(Event::ToolResult { tool_call_id: "".to_string(), return_value: ToolReturnValue::new("") }.type_name(), "ToolResult");
     assert_eq!(Event::ApprovalResponse { request_id: "".to_string(), response: ApprovalResponseKind::Approve, feedback: None }.type_name(), "ApprovalResponse");

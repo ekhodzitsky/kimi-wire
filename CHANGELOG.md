@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `Event::ToolCall` envelope type was incorrectly `"function"` instead of `"ToolCall"`. The payload now correctly preserves the inner `type: "function"` discriminator per the v1.10 spec.
 - `Event::ContentPart` serde roundtrip: the inner `ContentPart` carries its own `"type"` field, which conflicted with the `Event` envelope format.
 - `TransportWireClient::read_response` infinite loop when out-of-order messages filled `pending_messages` — now reads directly from transport when the expected id is not in the pending buffer.
 

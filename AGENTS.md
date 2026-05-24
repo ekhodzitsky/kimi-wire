@@ -131,7 +131,8 @@ This crate implements the Kimi Code CLI Wire Protocol v1.7. Compatibility is not
 ### 1. Envelope Format
 
 - `Event` and `Request` must serialize as `{"type":"<PascalCaseName>","payload":{...}}`.
-- `Event::ToolCall` wire name is `"function"`, not `"ToolCall"`.
+- `Event::ToolCall` envelope type is `"ToolCall"`; the payload carries an inner
+  `type: "function"` discriminator.
 - `ContentPart` uses `type` inside `payload` (e.g. `"text"`, `"image_url"`).
 
 ### 2. Serde Coverage

@@ -152,6 +152,24 @@ fn test_display_block_unknown_roundtrip() {
 }
 
 #[test]
+fn test_toolcall_wire_envelope_format() {
+    // Regression: envelope type must be "ToolCall", payload must keep inner "function".
+    let json = r#"{"type":"ToolCall","payload":{"type":"function","id":"tc-1","function":{"name":"tool","arguments":"{}"}}}"#;
+    let event: Event = serde_json::from_str(json).unwrap();
+    assert!(
+        matches!(event, Event::ToolCall { ref id, function: ToolCallFunction { ref name, arguments: Some(ref args) }, .. } if id == "tc-1" && name == "tool" && args == "{}")
+    );
+
+    // Serialization must reproduce the same envelope.
+    let back = serde_json::to_string(&event).unwrap();
+    let val: serde_json::Value = serde_json::from_str(&back).unwrap();
+    assert_eq!(val["type"], "ToolCall");
+    assert_eq!(val["payload"]["type"], "function");
+    assert_eq!(val["payload"]["id"], "tc-1");
+    assert_eq!(val["payload"]["function"]["name"], "tool");
+}
+
+#[test]
 fn test_tool_output_parts_roundtrip() {
     let output = ToolOutput::Parts(vec![
         ContentPart::Text(TextPart {

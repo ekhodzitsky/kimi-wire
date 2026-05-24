@@ -35,7 +35,8 @@ pub enum Event {
     ContentPart(ContentPart),
     /// A tool call from the model.
     ///
-    /// Wire name is `"function"` because Kimi serializes tool calls as `function` type.
+    /// Wire envelope type is `"ToolCall"`. The payload carries an inner
+    /// `type: "function"` discriminator, matching the official v1.10 spec.
     ToolCall {
         /// Tool call id.
         id: String,
@@ -127,7 +128,6 @@ pub(crate) enum FlatEvent {
     CompactionEnd,
     StatusUpdate(StatusUpdate),
     ContentPart(ContentPart),
-    #[serde(rename = "function")]
     ToolCall {
         id: String,
         function: ToolCallFunction,
@@ -201,7 +201,7 @@ impl Event {
             Event::CompactionEnd => "CompactionEnd",
             Event::StatusUpdate(_) => "StatusUpdate",
             Event::ContentPart(_) => "ContentPart",
-            Event::ToolCall { .. } => "function",
+            Event::ToolCall { .. } => "ToolCall",
             Event::ToolCallPart { .. } => "ToolCallPart",
             Event::ToolResult { .. } => "ToolResult",
             Event::ApprovalResponse { .. } => "ApprovalResponse",
@@ -258,6 +258,31 @@ impl Serialize for Event {
                 let payload = serde_json::to_value(part).map_err(serde::ser::Error::custom)?;
                 EventEnvelope {
                     type_name: "ContentPart".to_string(),
+                    payload,
+                }
+                .serialize(serializer)
+            }
+            // ToolCall payload carries an inner `type: "function"` discriminator
+            // that must be preserved in the payload, separate from the envelope type.
+            Event::ToolCall { id, function, extras } => {
+                #[derive(Serialize)]
+                struct ToolCallPayload<'a> {
+                    #[serde(rename = "type")]
+                    type_name: &'a str,
+                    id: &'a str,
+                    function: &'a ToolCallFunction,
+                    #[serde(skip_serializing_if = "Option::is_none")]
+                    extras: &'a Option<serde_json::Value>,
+                }
+                let payload = serde_json::to_value(&ToolCallPayload {
+                    type_name: "function",
+                    id,
+                    function,
+                    extras,
+                })
+                .map_err(serde::ser::Error::custom)?;
+                EventEnvelope {
+                    type_name: "ToolCall".to_string(),
                     payload,
                 }
                 .serialize(serializer)
