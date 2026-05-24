@@ -109,21 +109,6 @@ pub struct ExternalTool {
     pub parameters: serde_json::Value,
 }
 
-/// Approval policy for tool executions.
-///
-/// Controls whether the agent must ask for user confirmation before
-/// executing a tool.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
-#[serde(rename_all = "snake_case")]
-pub enum ApprovalPolicy {
-    /// Always ask for approval (default).
-    Human,
-    /// Never ask for approval (dangerous).
-    Yolo,
-    /// Ask only for destructive operations.
-    DestructiveOnly,
-}
-
 /// Initialize response result.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct InitializeResult {
