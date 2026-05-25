@@ -1,0 +1,30 @@
+name: Security Audit
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  # Run weekly to catch newly published advisories against locked dependencies
+  schedule:
+    - cron: '0 0 * * 0'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      # Cache crates.io index and build artifacts to speed up the audit
+      - uses: Swatinem/rust-cache@v2
+
+      # Install cargo-audit (checks Cargo.lock against RustSec Advisory Database)
+      - uses: taiki-e/install-action@cargo-audit
+
+      # Fail the job if any dependency has a known vulnerability
+      - run: cargo audit
