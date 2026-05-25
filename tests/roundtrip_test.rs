@@ -182,3 +182,65 @@ fn test_tool_output_parts_roundtrip() {
     let de: ToolOutput = serde_json::from_str(&json).unwrap();
     assert_eq!(de, output);
 }
+
+#[test]
+fn test_jsonrpc_version_serializes_as_string_2_0() {
+    let json = serde_json::to_string(&JsonRpcVersion::V2).unwrap();
+    assert_eq!(json, "\"2.0\"");
+}
+
+#[test]
+fn test_jsonrpc_version_deserializes_2_0() {
+    let de: JsonRpcVersion = serde_json::from_str("\"2.0\"").unwrap();
+    assert_eq!(de, JsonRpcVersion);
+}
+
+#[test]
+fn test_jsonrpc_version_rejects_1_0() {
+    let err = serde_json::from_str::<JsonRpcVersion>("\"1.0\"").unwrap_err();
+    let msg = err.to_string();
+    assert!(
+        msg.contains("2.0"),
+        "error message should mention expected version '2.0', got: {msg}"
+    );
+}
+
+#[test]
+fn test_jsonrpc_version_rejects_empty_string() {
+    let err = serde_json::from_str::<JsonRpcVersion>("\"\"").unwrap_err();
+    let msg = err.to_string();
+    assert!(
+        msg.contains("2.0"),
+        "error message should mention expected version '2.0', got: {msg}"
+    );
+}
+
+#[test]
+fn test_jsonrpc_version_rejects_non_string() {
+    // Non-string values are rejected at the type level before the version check.
+    assert!(serde_json::from_str::<JsonRpcVersion>("42").is_err());
+}
+
+#[test]
+fn test_jsonrpc_request_with_v2_constant() {
+    let req = JsonRpcRequest {
+        jsonrpc: JsonRpcVersion::V2,
+        method: "initialize".to_string(),
+        id: "init-1".to_string(),
+        params: InitializeParams {
+            protocol_version: "1.10".to_string(),
+            client: Some(ClientInfo {
+                name: "test-client".to_string(),
+                version: Some("1.0.0".to_string()),
+            }),
+            external_tools: None,
+            capabilities: Some(ClientCapabilities {
+                supports_question: Some(true),
+                supports_plan_mode: Some(false),
+            }),
+            hooks: None,
+        },
+    };
+    let json = serde_json::to_string(&req).unwrap();
+    assert!(json.contains("\"jsonrpc\":\"2.0\""));
+}
