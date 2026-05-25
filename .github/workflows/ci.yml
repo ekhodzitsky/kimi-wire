@@ -36,6 +36,30 @@ jobs:
         with:
           command: check advisories licenses bans sources
 
+  # GitHub Dependency Review scans PR diffs for newly introduced
+  # vulnerable dependencies or license violations. It complements
+  # cargo-deny (which audits the full lockfile) by gating only
+  # *changes* introduced in a pull request.
+  dependency-review:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history is required to diff dependencies between base and head.
+          fetch-depth: 0
+      - uses: actions/dependency-review-action@v4
+        with:
+          # Fail on any severity (low and above).
+          fail-on-severity: low
+          # Only comment when issues are found to avoid PR noise.
+          comment-summary-in-pr: on-failure
+          # License allow-list aligned with deny.toml.
+          allow-licenses: MIT, Apache-2.0, BSD-3-Clause, Unicode-DFS-2016, Unicode-3.0
+
   coverage:
     runs-on: ubuntu-latest
     steps:
