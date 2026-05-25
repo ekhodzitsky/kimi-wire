@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Timeout, pending-buffer cap, and graceful shutdown
 - Expand cargo-deny configuration for supply chain security
 - Add automated changelog generation via git-cliff
+- Expand cargo-deny configuration for supply chain security
 ### Fixed
 - TransportWireClient read_response infinite loop, ChildProcessTransport tests, coverage 96%
 - ToolCall envelope type is "ToolCall", not "function"
