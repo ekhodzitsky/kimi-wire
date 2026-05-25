@@ -21,9 +21,15 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
       - uses: Swatinem/rust-cache@v2
-      - run: cargo test --all-features --locked
-      - run: cargo clippy --all-targets --all-features --locked -- -D warnings
-      - run: cargo doc --no-deps --all-features --locked
+      - name: Determine --locked flag
+        id: flags
+        run: |
+          if [ "${{ matrix.rust }}" = "stable" ]; then
+            echo "locked=--locked" >> "$GITHUB_OUTPUT"
+          fi
+      - run: cargo test --all-features ${{ steps.flags.outputs.locked }}
+      - run: cargo clippy --all-targets --all-features ${{ steps.flags.outputs.locked }} -- -D warnings
+      - run: cargo doc --no-deps --all-features ${{ steps.flags.outputs.locked }}
         env:
           RUSTDOCFLAGS: -D warnings
 
@@ -63,7 +69,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: taiki-e/install-action@cargo-hack
       - uses: Swatinem/rust-cache@v2
-      - run: cargo hack check --feature-powerset --no-dev-deps --locked
+      - run: cargo hack check --feature-powerset --locked
 
   fuzz:
     runs-on: ubuntu-latest
