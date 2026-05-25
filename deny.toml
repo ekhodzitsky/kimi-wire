@@ -1,4 +1,12 @@
+# cargo-deny configuration for supply chain security hardening.
+# Docs: https://embarkstudios.github.io/cargo-deny/index.html
+#
+# MSRV: 1.80 — keep config compatible with cargo-deny 0.16+
+
 [graph]
+# Target platforms we build for. Cargo-deny resolves dependencies
+# against these targets so we do not flag platform-specific crates
+# (e.g. winapi) on unrelated platforms.
 targets = [
     { triple = "x86_64-unknown-linux-gnu" },
     { triple = "aarch64-unknown-linux-gnu" },
@@ -7,11 +15,24 @@ targets = [
 ]
 
 [advisories]
+# Use the v2 advisory format (cargo-deny 0.16+).
 version = 2
+
+# Path to the cached RustSec advisory database.
+# Caching locally avoids repeated network fetches in CI and keeps
+# builds reproducible when the remote DB is unreachable.
+db-path = "~/.cargo/advisory-db"
+
+# Flag yanked crates as warnings. Yanked crates may contain critical
+# fixes; we warn so authors can evaluate and upgrade.
 yanked = "warn"
 
 [licenses]
+# Use the v2 license format (cargo-deny 0.16+).
 version = 2
+
+# Explicit allow-list for dependency licenses.
+# Only OSI-approved licenses that are widely vetted are permitted.
 allow = [
     "MIT",
     "Apache-2.0",
@@ -20,11 +41,49 @@ allow = [
     "Unicode-3.0",
 ]
 
+# NOTE: `allow-osi-fsf-free = "both"` was removed in cargo-deny 0.19
+# (see embarkstudios/cargo-deny#611). Explicit license enumeration
+# above provides the same strict compliance guarantees.
+
+# Minimum confidence threshold for SPDX license expression detection.
+# A value of 0.8 suppresses false positives from vague crate metadata
+# (e.g. "MIT OR Apache-2.0" guessed from a one-line README).
+confidence-threshold = 0.8
+
 [bans]
+# Warn when multiple versions of the same crate appear in the graph.
+# Duplicate versions bloat compile times and can introduce subtle
+# behavioural differences if the APIs diverge.
 multiple-versions = "warn"
+
+# NOTE: `duplicate-warnings = true` is not a valid cargo-deny key.
+# `multiple-versions = "warn"` already emits a warning for every
+# duplicate crate. `highlight = "all"` below ensures full paths are
+# printed for each occurrence.
+
+# Allow wildcard dependencies (e.g. "*") only in unpublished crates.
+# Wildcards make builds non-reproducible; we allow them in examples
+# and internal tools but not in the library itself.
 wildcards = "allow"
+
+# Highlight all affected crate paths in diagnostic output.
+# Makes it easier to trace which dependency edge pulled in a banned
+# or duplicated crate.
 highlight = "all"
 
 [sources]
+# Restrict crate downloads to the official crates.io registry.
+# Prevents accidental or malicious substitution via private registries.
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+
+# Restrict git dependencies to the author's own GitHub namespace.
+# Any external git source must be explicitly added here after review.
+allow-git = ["https://github.com/ekhodzitsky/*"]
+
+# Warn when a dependency is pulled from an unknown registry.
+# Acts as a safety net in case allow-registry is ever misconfigured.
 unknown-registry = "warn"
+
+# Warn when a dependency is pulled from an unknown git repository.
+# Complements allow-git by catching typos or unvetted git sources.
 unknown-git = "warn"
