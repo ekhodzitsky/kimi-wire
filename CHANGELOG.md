@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   benchmarks against a `main` branch baseline and fails on > 5% regression.
   Results are uploaded as GitHub artifacts (HTML reports + raw data) with a
   30-day retention.
+- Spell checking via `typos-cli` in CI and local development.
 
 ## [0.2.0] - 2026-05-25
 

@@ -15,6 +15,9 @@ cargo test --all-features
 # Run lints
 cargo clippy --all-targets --all-features
 
+# Check spelling
+typos
+
 # Build documentation
 cargo doc --no-deps --all-features
 ```
@@ -44,10 +47,50 @@ The job fails if any benchmark regresses by more than 5% (measured as the lower
 bound of Criterion's confidence interval). Results are uploaded as GitHub
 artifacts (HTML reports + raw data) and retained for 30 days.
 
+## Pre-commit Hooks
+
+This repository uses [lefthook](https://github.com/evilmartians/lefthook) to run automated checks before each commit and push.
+
+### Install lefthook
+
+```bash
+# macOS
+brew install lefthook
+
+# Linux (apt-based distributions)
+apt install lefthook
+
+# Or download a binary from GitHub releases
+# https://github.com/evilmartians/lefthook/releases
+```
+
+### Install hooks into the repository
+
+```bash
+lefthook install
+```
+
+Hooks run automatically on `git commit` and `git push`. To bypass them for a single commit, use:
+
+```bash
+git commit --no-verify
+```
+
+### What the hooks check
+
+**Pre-commit** (fast, parallel):
+- `rustfmt --check` on staged files
+- `cargo clippy --all-targets --all-features -- -D warnings`
+- `cargo test --all-features --lib` (unit tests only)
+
+**Pre-push**:
+- `cargo test --all-features` (full test suite, including integration tests)
+
 ## Code Quality
 
 - **MSRV**: Rust 1.80
 - All code must pass `cargo clippy --all-targets --all-features`
+- All prose must pass `typos` (see [typos-cli](https://github.com/crate-ci/typos))
 - All public items must have doc comments (`#![warn(missing_docs)]` is enabled)
 - `unwrap()`, `expect()`, and `panic!()` are banned in production code
 - Every new protocol type needs a serde roundtrip test
@@ -63,7 +106,7 @@ artifacts (HTML reports + raw data) and retained for 30 days.
 
 1. Fork the repository and create a feature branch (`feat/...`, `fix/...`, `docs/...`)
 2. Make focused, atomic commits with clear messages
-3. Ensure CI passes (`cargo test`, `clippy`, `doc`, `cargo-deny`)
+3. Ensure CI passes (`cargo test`, `clippy`, `doc`, `typos`, `cargo-deny`)
 4. Update `CHANGELOG.md` under `[Unreleased]` if the change is user-visible
 5. Open a PR with a clear description of the change, motivation, and verification steps
 
