@@ -63,7 +63,7 @@ async fn test_transport_wire_client_send_request() {
     let mut client = TransportWireClient::new(transport);
 
     let req = JsonRpcRequest {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         method: "prompt".to_string(),
         id: "req-1".to_string(),
         params: PromptParams {
@@ -84,7 +84,7 @@ async fn test_transport_wire_client_read_raw_message() {
     let mut client = TransportWireClient::new(transport);
 
     let msg = RawWireMessage {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         id: Some("1".to_string()),
         method: None,
         params: None,
@@ -126,7 +126,7 @@ async fn test_transport_wire_client_read_response() {
     let mut client = TransportWireClient::new(transport);
 
     let msg = RawWireMessage {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         id: Some("req-1".to_string()),
         method: None,
         params: None,
@@ -145,7 +145,7 @@ async fn test_transport_wire_client_read_response_buffers_out_of_order() {
     let mut client = TransportWireClient::new(transport);
 
     let msg1 = RawWireMessage {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         id: Some("other".to_string()),
         method: None,
         params: None,
@@ -153,7 +153,7 @@ async fn test_transport_wire_client_read_response_buffers_out_of_order() {
         error: None,
     };
     let msg2 = RawWireMessage {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         id: Some("wanted".to_string()),
         method: None,
         params: None,
@@ -178,7 +178,7 @@ async fn test_transport_wire_client_read_response_error() {
     let mut client = TransportWireClient::new(transport);
 
     let msg = RawWireMessage {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         id: Some("err".to_string()),
         method: None,
         params: None,
@@ -237,7 +237,7 @@ async fn test_transport_wire_client_initialize_success() {
         assert_eq!(req["method"], "initialize");
 
         let resp = JsonRpcSuccessResponse {
-            jsonrpc: JsonRpcVersion::default(),
+            jsonrpc: JsonRpcVersion::V2,
             id: req["id"].as_str().unwrap().to_string(),
             result: InitializeResult {
                 protocol_version: "1.10".to_string(),
@@ -269,7 +269,7 @@ async fn test_transport_wire_client_initialize_method_not_found() {
         let req: serde_json::Value = serde_json::from_str(&line).unwrap();
 
         let resp = JsonRpcErrorResponse {
-            jsonrpc: JsonRpcVersion::default(),
+            jsonrpc: JsonRpcVersion::V2,
             id: req["id"].as_str().unwrap().to_string(),
             error: JsonRpcError {
                 code: METHOD_NOT_FOUND,
@@ -298,7 +298,7 @@ async fn test_transport_wire_client_initialize_other_error() {
         let req: serde_json::Value = serde_json::from_str(&line).unwrap();
 
         let resp = JsonRpcErrorResponse {
-            jsonrpc: JsonRpcVersion::default(),
+            jsonrpc: JsonRpcVersion::V2,
             id: req["id"].as_str().unwrap().to_string(),
             error: JsonRpcError {
                 code: -32600,
@@ -335,7 +335,7 @@ async fn test_transport_wire_client_prompt() {
         let req: serde_json::Value = serde_json::from_str(&line).unwrap();
 
         let resp = JsonRpcSuccessResponse {
-            jsonrpc: JsonRpcVersion::default(),
+            jsonrpc: JsonRpcVersion::V2,
             id: req["id"].as_str().unwrap().to_string(),
             result: PromptResult { status: PromptStatus::Finished, steps: Some(1) },
         };

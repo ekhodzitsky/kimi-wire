@@ -290,7 +290,7 @@ async fn test_in_memory_client_default() {
 async fn test_in_memory_client_read_raw_message_timeout_with_message() {
     let client = InMemoryWireClient::new();
     let msg = RawWireMessage {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         id: Some("1".to_string()),
         method: None,
         params: None,

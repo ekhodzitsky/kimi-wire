@@ -142,7 +142,7 @@ impl<T: Transport> WireClient for TransportWireClient<T> {
         result: Res,
     ) -> Result<(), WireError> {
         let resp = JsonRpcSuccessResponse {
-            jsonrpc: crate::protocol::JsonRpcVersion::default(),
+            jsonrpc: crate::protocol::JsonRpcVersion::V2,
             id: id.to_string(),
             result,
         };
@@ -157,7 +157,7 @@ impl<T: Transport> WireClient for TransportWireClient<T> {
         message: &str,
     ) -> Result<(), WireError> {
         let resp = JsonRpcErrorResponse {
-            jsonrpc: crate::protocol::JsonRpcVersion::default(),
+            jsonrpc: crate::protocol::JsonRpcVersion::V2,
             id: id.to_string(),
             error: crate::protocol::JsonRpcError {
                 code,
@@ -175,7 +175,7 @@ impl<T: Transport> WireClient for TransportWireClient<T> {
     ) -> Result<InitializeResult, WireError> {
         let id = self.next_id();
         let req = JsonRpcRequest {
-            jsonrpc: crate::protocol::JsonRpcVersion::default(),
+            jsonrpc: crate::protocol::JsonRpcVersion::V2,
             method: "initialize".to_string(),
             id: id.clone(),
             params,

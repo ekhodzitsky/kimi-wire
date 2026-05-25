@@ -1,14 +1,42 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-/// JSON-RPC version string (always `"2.0"`).
-/// JSON-RPC version string (always `"2.0"`).
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct JsonRpcVersion(pub String);
+/// JSON-RPC version marker.
+///
+/// This type can only represent the value `"2.0"`, matching the JSON-RPC 2.0
+/// specification. It serializes as the JSON string `"2.0"` and deserialization
+/// rejects any other value.
+///
+/// Construct via [`JsonRpcVersion::V2`] or [`JsonRpcVersion::default()`].
+#[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
+pub struct JsonRpcVersion;
 
-impl Default for JsonRpcVersion {
-    fn default() -> Self {
-        Self("2.0".to_string())
+impl JsonRpcVersion {
+    /// The only valid JSON-RPC version this crate supports.
+    pub const V2: Self = Self;
+
+    /// Wire representation as a `&'static str` (`"2.0"`).
+    pub fn as_str(&self) -> &'static str {
+        "2.0"
+    }
+}
+
+impl serde::Serialize for JsonRpcVersion {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str("2.0")
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for JsonRpcVersion {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let s = <std::borrow::Cow<'_, str>>::deserialize(deserializer)?;
+        if s == "2.0" {
+            Ok(JsonRpcVersion)
+        } else {
+            Err(serde::de::Error::custom(format!(
+                "unsupported JSON-RPC version: expected \"2.0\", got {s:?}"
+            )))
+        }
     }
 }
 

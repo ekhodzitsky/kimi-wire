@@ -4,7 +4,7 @@ use serde_json::json;
 #[test]
 fn test_jsonrpc_request_roundtrip() {
     let req = JsonRpcRequest {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         method: "initialize".to_string(),
         id: "init-1".to_string(),
         params: InitializeParams {

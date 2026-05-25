@@ -76,7 +76,7 @@ pub trait WireClient: Send {
         async move {
             let id = self.next_id();
             let req = JsonRpcRequest {
-                jsonrpc: crate::protocol::JsonRpcVersion::default(),
+                jsonrpc: crate::protocol::JsonRpcVersion::V2,
                 method: "prompt".to_string(),
                 id: id.clone(),
                 params: PromptParams {
@@ -93,7 +93,7 @@ pub trait WireClient: Send {
         async move {
             let id = self.next_id();
             let req = JsonRpcRequest {
-                jsonrpc: crate::protocol::JsonRpcVersion::default(),
+                jsonrpc: crate::protocol::JsonRpcVersion::V2,
                 method: "replay".to_string(),
                 id: id.clone(),
                 params: ReplayParams::default(),
@@ -108,7 +108,7 @@ pub trait WireClient: Send {
         async move {
             let id = self.next_id();
             let req = JsonRpcRequest {
-                jsonrpc: crate::protocol::JsonRpcVersion::default(),
+                jsonrpc: crate::protocol::JsonRpcVersion::V2,
                 method: "steer".to_string(),
                 id: id.clone(),
                 params: SteerParams {
@@ -128,7 +128,7 @@ pub trait WireClient: Send {
         async move {
             let id = self.next_id();
             let req = JsonRpcRequest {
-                jsonrpc: crate::protocol::JsonRpcVersion::default(),
+                jsonrpc: crate::protocol::JsonRpcVersion::V2,
                 method: "set_plan_mode".to_string(),
                 id: id.clone(),
                 params: SetPlanModeParams { enabled },
@@ -143,7 +143,7 @@ pub trait WireClient: Send {
         async move {
             let id = self.next_id();
             let req = JsonRpcRequest {
-                jsonrpc: crate::protocol::JsonRpcVersion::default(),
+                jsonrpc: crate::protocol::JsonRpcVersion::V2,
                 method: "cancel".to_string(),
                 id: id.clone(),
                 params: CancelParams::default(),
@@ -281,7 +281,7 @@ impl WireClient for InMemoryWireClient {
         result: T,
     ) -> Result<(), WireError> {
         let resp = crate::protocol::JsonRpcSuccessResponse {
-            jsonrpc: crate::protocol::JsonRpcVersion::default(),
+            jsonrpc: crate::protocol::JsonRpcVersion::V2,
             id: id.to_string(),
             result,
         };
@@ -300,7 +300,7 @@ impl WireClient for InMemoryWireClient {
         message: &str,
     ) -> Result<(), WireError> {
         let resp = crate::protocol::JsonRpcErrorResponse {
-            jsonrpc: crate::protocol::JsonRpcVersion::default(),
+            jsonrpc: crate::protocol::JsonRpcVersion::V2,
             id: id.to_string(),
             error: crate::protocol::JsonRpcError {
                 code,
