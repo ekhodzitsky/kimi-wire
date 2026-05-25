@@ -1,0 +1,31 @@
+# Lefthook configuration for kimi-wire
+# https://github.com/evilmartians/lefthook
+#
+# Install lefthook:
+#   macOS:  brew install lefthook
+#   Linux:  apt install lefthook  (or download from GitHub releases)
+#
+# Install hooks into this repo:
+#   lefthook install
+#
+# Skip hooks for a single commit:
+#   git commit --no-verify
+
+pre-commit:
+  parallel: true
+  commands:
+    fmt:
+      glob: "*.rs"
+      run: rustfmt --check {staged_files}
+    clippy:
+      glob: "*.rs"
+      run: cargo clippy --all-targets --all-features -- -D warnings
+    test-lib:
+      glob: "*.rs"
+      run: cargo test --all-features --lib
+
+pre-push:
+  commands:
+    test-full:
+      glob: "*.rs"
+      run: cargo test --all-features
