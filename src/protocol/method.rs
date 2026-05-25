@@ -208,6 +208,7 @@ pub struct PromptResult {
 /// Status of a completed turn.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum PromptStatus {
     /// Turn finished successfully.
     Finished,
@@ -250,6 +251,7 @@ pub struct ReplayResult {
 /// Replay completion status.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum ReplayStatus {
     /// Replay finished successfully.
     Finished,
@@ -278,6 +280,7 @@ pub struct SteerResult {
 /// Steer operation status.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum SteerStatus {
     /// Input was successfully steered.
     Steered,
@@ -306,6 +309,7 @@ pub struct SetPlanModeResult {
 /// SetPlanMode operation status.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum SetPlanModeStatus {
     /// Operation succeeded.
     Ok,
