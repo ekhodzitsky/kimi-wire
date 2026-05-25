@@ -1,6 +1,6 @@
 [package]
 name = "kimi-wire"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Evgeny Khodzitsky"]
 description = "Typed Rust client for the Kimi Code CLI Wire protocol"
