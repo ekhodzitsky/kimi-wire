@@ -8,7 +8,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Inject a mock response.
     client
         .inject(RawWireMessage {
-            jsonrpc: kimi_wire::protocol::JsonRpcVersion::default(),
+            jsonrpc: kimi_wire::protocol::JsonRpcVersion::V2,
             id: Some("req-1".to_string()),
             method: None,
             params: None,

@@ -88,7 +88,7 @@ proptest! {
         protocol_version in any::<String>(),
     ) {
         let req = JsonRpcRequest {
-            jsonrpc: JsonRpcVersion::default(),
+            jsonrpc: JsonRpcVersion::V2,
             method,
             id,
             params: InitializeParams {

@@ -39,7 +39,7 @@ fn bench_approval_request_roundtrip(c: &mut Criterion) {
 
 fn bench_jsonrpc_request_roundtrip(c: &mut Criterion) {
     let req = JsonRpcRequest {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         method: "initialize".into(),
         id: "init-1".into(),
         params: InitializeParams::new("1.7"),
