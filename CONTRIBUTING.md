@@ -19,6 +19,45 @@ cargo clippy --all-targets --all-features
 cargo doc --no-deps --all-features
 ```
 
+## Pre-commit Hooks
+
+This repository uses [lefthook](https://github.com/evilmartians/lefthook) to run automated checks before each commit and push.
+
+### Install lefthook
+
+```bash
+# macOS
+brew install lefthook
+
+# Linux (apt-based distributions)
+apt install lefthook
+
+# Or download a binary from GitHub releases
+# https://github.com/evilmartians/lefthook/releases
+```
+
+### Install hooks into the repository
+
+```bash
+lefthook install
+```
+
+Hooks run automatically on `git commit` and `git push`. To bypass them for a single commit, use:
+
+```bash
+git commit --no-verify
+```
+
+### What the hooks check
+
+**Pre-commit** (fast, parallel):
+- `rustfmt --check` on staged files
+- `cargo clippy --all-targets --all-features -- -D warnings`
+- `cargo test --all-features --lib` (unit tests only)
+
+**Pre-push**:
+- `cargo test --all-features` (full test suite, including integration tests)
+
 ## Code Quality
 
 - **MSRV**: Rust 1.80
