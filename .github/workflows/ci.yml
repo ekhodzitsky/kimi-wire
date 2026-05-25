@@ -70,7 +70,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@nightly
-      - uses: taiki-e/install-action@cargo-fuzz
+      - run: cargo install cargo-fuzz --locked
       - uses: Swatinem/rust-cache@v2
       - run: cargo fuzz build
 
