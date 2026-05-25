@@ -12,6 +12,7 @@ use super::event::HookAction;
 /// Serialization follows the official wire envelope format:
 /// `{"type": "ApprovalRequest", "payload": {"id": ...}}`.
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub enum Request {
     /// Request for user approval before executing a tool.
     ApprovalRequest(ApprovalRequest),
@@ -133,6 +134,7 @@ pub struct ApprovalRequest {
 /// Source of an approval request.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum SourceKind {
     /// Request originated from a foreground turn.
     ForegroundTurn,
