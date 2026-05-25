@@ -32,7 +32,7 @@ async fn test_next_id_increments() {
 async fn test_send_request_stores_outgoing() {
     let mut client = InMemoryWireClient::new();
     let req = JsonRpcRequest {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         method: "prompt".to_string(),
         id: "req-1".to_string(),
         params: PromptParams {
@@ -56,7 +56,7 @@ async fn test_send_request_stores_outgoing() {
 async fn test_read_raw_message_returns_injected() {
     let client = InMemoryWireClient::new();
     let msg = RawWireMessage {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         id: Some("1".to_string()),
         method: None,
         params: None,
@@ -87,7 +87,7 @@ async fn test_read_raw_message_empty_queue_returns_stream_closed() {
 async fn test_read_raw_message_timeout_success() {
     let client = InMemoryWireClient::new();
     let msg = RawWireMessage {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         id: Some("1".to_string()),
         method: None,
         params: None,
@@ -112,7 +112,7 @@ async fn test_read_raw_message_timeout_success() {
 async fn test_read_response_matches_id() {
     let mut client = InMemoryWireClient::new();
     let msg = RawWireMessage {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         id: Some("expected".to_string()),
         method: None,
         params: None,
@@ -129,7 +129,7 @@ async fn test_read_response_matches_id() {
 async fn test_read_response_buffers_out_of_order() {
     let mut client = InMemoryWireClient::new();
     let msg1 = RawWireMessage {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         id: Some("other".to_string()),
         method: None,
         params: None,
@@ -137,7 +137,7 @@ async fn test_read_response_buffers_out_of_order() {
         error: None,
     };
     let msg2 = RawWireMessage {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         id: Some("wanted".to_string()),
         method: None,
         params: None,
@@ -166,7 +166,7 @@ async fn test_read_response_empty_queue() {
 async fn test_read_response_json_rpc_error() {
     let mut client = InMemoryWireClient::new();
     let msg = RawWireMessage {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         id: Some("err".to_string()),
         method: None,
         params: None,
@@ -187,7 +187,7 @@ async fn test_read_response_json_rpc_error() {
 async fn test_read_response_missing_result() {
     let mut client = InMemoryWireClient::new();
     let msg = RawWireMessage {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         id: Some("noresult".to_string()),
         method: None,
         params: None,
@@ -255,7 +255,7 @@ async fn test_initialize_sets_handshake_done() {
 async fn test_prompt_high_level() {
     let mut client = InMemoryWireClient::new();
     let response = RawWireMessage {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         id: Some("req-1".to_string()),
         method: None,
         params: None,
@@ -286,7 +286,7 @@ async fn test_start_prompt_returns_id() {
 async fn test_replay_high_level() {
     let mut client = InMemoryWireClient::new();
     let response = RawWireMessage {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         id: Some("req-1".to_string()),
         method: None,
         params: None,
@@ -304,7 +304,7 @@ async fn test_replay_high_level() {
 async fn test_steer_high_level() {
     let mut client = InMemoryWireClient::new();
     let response = RawWireMessage {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         id: Some("req-1".to_string()),
         method: None,
         params: None,
@@ -321,7 +321,7 @@ async fn test_steer_high_level() {
 async fn test_set_plan_mode_high_level() {
     let mut client = InMemoryWireClient::new();
     let response = RawWireMessage {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         id: Some("req-1".to_string()),
         method: None,
         params: None,
@@ -339,7 +339,7 @@ async fn test_set_plan_mode_high_level() {
 async fn test_cancel_high_level() {
     let mut client = InMemoryWireClient::new();
     let response = RawWireMessage {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         id: Some("req-1".to_string()),
         method: None,
         params: None,
@@ -372,7 +372,7 @@ async fn test_shutdown_ok() {
 async fn test_read_raw_message_drains_pending() {
     let mut client = InMemoryWireClient::new();
     let msg1 = RawWireMessage {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion::V2,
         id: Some("other".to_string()),
         method: None,
         params: None,
