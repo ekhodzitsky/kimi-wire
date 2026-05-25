@@ -13,8 +13,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+      - name: Verify changelog
+        run: |
+          cargo install git-cliff --locked
+          git-cliff --output expected.md
+          diff -u CHANGELOG.md expected.md || {
+            echo "::error::CHANGELOG.md is out of date. Run: git-cliff --output CHANGELOG.md"
+            exit 1
+          }
       - run: cargo test --all-features --locked
       - run: cargo clippy --all-targets --all-features --locked -- -D warnings
       - run: cargo publish --locked --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
