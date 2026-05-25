@@ -28,6 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING:** All public enums (`WireError`, `Event`, `Request`, `ContentPart`,
+  `PromptStatus`, `ReplayStatus`, `SteerStatus`, `SetPlanModeStatus`,
+  `DisplayBlockType`, `TodoStatus`, `ApprovalResponseKind`, `HookAction`,
+  `SourceKind`) are now `#[non_exhaustive]`. External `match` statements on
+  these enums must include a wildcard arm. This enables forward-compatible
+  variant additions without further breaking changes.
 - `tokio` is now a required dependency (was optional under `process`). `WireClient` and `InMemoryWireClient` need it unconditionally. `process` still gates `ChildProcessTransport` and `TransportWireClient`.
 
 ## [0.1.0] - 2026-05-21
