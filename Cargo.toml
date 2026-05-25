@@ -46,6 +46,10 @@ proptest = "1.6"
 criterion = { version = "0.5", default-features = false, features = ["async_tokio", "html_reports"] }
 tempfile = "3.14"
 
+[[bench]]
+name = "serde_roundtrip"
+harness = false
+
 [[example]]
 name = "basic_prompt"
 required-features = ["process"]

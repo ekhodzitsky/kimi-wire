@@ -19,6 +19,31 @@ cargo clippy --all-targets --all-features
 cargo doc --no-deps --all-features
 ```
 
+## Benchmarking
+
+Benchmarks live in `benches/` and use [Criterion.rs](https://benchee.dev/) (via `cargo bench`).
+
+```bash
+# Run all benchmarks
+cargo bench --all-features
+
+# Run with enhanced HTML reports (requires cargo-criterion)
+cargo install cargo-criterion
+cargo criterion --all-features
+
+# Compare current code against a saved baseline
+cargo bench --all-features -- --save-baseline my_baseline
+# ... make changes ...
+cargo bench --all-features -- --baseline my_baseline
+```
+
+### CI regression detection
+
+Pull requests trigger benchmark execution against the `main` branch baseline.
+The job fails if any benchmark regresses by more than 5% (measured as the lower
+bound of Criterion's confidence interval). Results are uploaded as GitHub
+artifacts (HTML reports + raw data) and retained for 30 days.
+
 ## Code Quality
 
 - **MSRV**: Rust 1.80
