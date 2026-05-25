@@ -22,7 +22,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-kimi-wire = "0.1"
+kimi-wire = "0.3"
 ```
 
 ### Mock client (testing)
@@ -86,6 +86,10 @@ This crate targets **Wire protocol version 1.10** as documented by Moonshot AI. 
 ## MSRV
 
 Rust **1.80** (required for `std::sync::LazyLock`).
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a list of all notable changes.
 
 ## License
 
