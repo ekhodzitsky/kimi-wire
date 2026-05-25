@@ -51,6 +51,7 @@ impl From<&str> for ContentPart {
 /// A content part in a message.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "type", rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum ContentPart {
     /// Plain text content.
     Text(TextPart),
@@ -161,6 +162,7 @@ pub struct DisplayBlock {
 /// Discriminator for [`DisplayBlock`] types.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum DisplayBlockType {
     /// Brief textual summary.
     Brief,
@@ -187,6 +189,7 @@ pub struct TodoDisplayItem {
 /// Status of a todo display item.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum TodoStatus {
     /// Not started.
     Pending,

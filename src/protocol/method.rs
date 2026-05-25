@@ -208,6 +208,7 @@ pub struct PromptResult {
 /// Status of a completed turn.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum PromptStatus {
     /// Turn finished successfully.
     Finished,
@@ -220,11 +221,17 @@ pub enum PromptStatus {
     /// Non-standard: observed in some server implementations. Not part of the
     /// official v1.10 spec, which only defines `finished`, `cancelled`, and
     /// `max_steps_reached`.
+    ///
+    /// May be removed in a future major version. Prefer matching this under a
+    /// `_` arm rather than relying on it.
     Pending,
     /// An unexpected end-of-stream occurred.
     ///
     /// Non-standard: observed in some server implementations. Not part of the
     /// official v1.10 spec.
+    ///
+    /// May be removed in a future major version. Prefer matching this under a
+    /// `_` arm rather than relying on it.
     UnexpectedEof,
 }
 
@@ -250,6 +257,7 @@ pub struct ReplayResult {
 /// Replay completion status.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum ReplayStatus {
     /// Replay finished successfully.
     Finished,
@@ -278,6 +286,7 @@ pub struct SteerResult {
 /// Steer operation status.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum SteerStatus {
     /// Input was successfully steered.
     Steered,
@@ -306,6 +315,7 @@ pub struct SetPlanModeResult {
 /// SetPlanMode operation status.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum SetPlanModeStatus {
     /// Operation succeeded.
     Ok,

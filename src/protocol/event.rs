@@ -10,6 +10,7 @@ use super::content::{ContentPart, ToolReturnValue, UserInput};
 /// Serialization follows the official wire envelope format:
 /// `{"type": "TurnBegin", "payload": {"user_input": ...}}`.
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub enum Event {
     /// A new turn has started with the given user input.
     TurnBegin {
@@ -453,6 +454,7 @@ pub struct ToolCallFunction {
 /// Client's response to an approval request.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum ApprovalResponseKind {
     /// Approve this request once.
     Approve,
@@ -466,6 +468,7 @@ pub enum ApprovalResponseKind {
 /// Action taken by a hook.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum HookAction {
     /// Allow the operation to proceed.
     Allow,

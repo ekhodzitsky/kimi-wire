@@ -32,6 +32,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `pub String`) is gone; construct via `JsonRpcVersion::V2` or
   `JsonRpcVersion::default()`. Read via `JsonRpcVersion::as_str()`. The wire
   format is unchanged (still serializes as the string `"2.0"`).
+- **BREAKING:** All public enums (`WireError`, `Event`, `Request`, `ContentPart`,
+  `PromptStatus`, `ReplayStatus`, `SteerStatus`, `SetPlanModeStatus`,
+  `DisplayBlockType`, `TodoStatus`, `ApprovalResponseKind`, `HookAction`,
+  `SourceKind`) are now `#[non_exhaustive]`. External `match` statements on
+  these enums must include a wildcard arm. This enables forward-compatible
+  variant additions without further breaking changes.
 - `tokio` is now a required dependency (was optional under `process`). `WireClient` and `InMemoryWireClient` need it unconditionally. `process` still gates `ChildProcessTransport` and `TransportWireClient`.
 
 ### Fixed
