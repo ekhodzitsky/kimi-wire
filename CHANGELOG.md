@@ -28,7 +28,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING:** `JsonRpcVersion` is now a unit type. Its single field (which was
+  `pub String`) is gone; construct via `JsonRpcVersion::V2` or
+  `JsonRpcVersion::default()`. Read via `JsonRpcVersion::as_str()`. The wire
+  format is unchanged (still serializes as the string `"2.0"`).
 - `tokio` is now a required dependency (was optional under `process`). `WireClient` and `InMemoryWireClient` need it unconditionally. `process` still gates `ChildProcessTransport` and `TransportWireClient`.
+
+### Fixed
+
+- `JsonRpcVersion` deserialization now rejects any value other than `"2.0"`
+  instead of silently accepting arbitrary strings.
 
 ## [0.1.0] - 2026-05-21
 
