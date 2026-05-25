@@ -49,7 +49,7 @@ jobs:
       - uses: taiki-e/install-action@cargo-tarpaulin
       - uses: Swatinem/rust-cache@v2
       - run: cargo tarpaulin --all-features --out xml --timeout 120 --fail-under 90
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v6
         with:
           files: ./cobertura.xml
           fail_ci_if_error: false
