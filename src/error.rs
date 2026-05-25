@@ -12,6 +12,7 @@ use std::time::Duration;
 /// still receive the full error message; the cause chain is simply collapsed
 /// into the display string at the boundary.
 #[derive(thiserror::Error, Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub enum WireError {
     /// The wire stream closed unexpectedly.
     #[error("wire stream closed")]
