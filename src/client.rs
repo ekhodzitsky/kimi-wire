@@ -6,6 +6,11 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 use tokio::sync::Mutex;
 
+#[cfg(feature = "process")]
+use crate::transport::MAX_PENDING_MESSAGES;
+#[cfg(not(feature = "process"))]
+const MAX_PENDING_MESSAGES: usize = 1024;
+
 use crate::error::WireError;
 use crate::protocol::{
     CancelParams, CancelResult, InitializeParams, InitializeResult, JsonRpcRequest, PromptParams,
@@ -177,6 +182,7 @@ pub struct InMemoryWireClient {
     outgoing: Mutex<Vec<serde_json::Value>>,
     handshake_done: bool,
     request_counter: u64,
+    default_timeout: Option<Duration>,
 }
 
 impl Default for InMemoryWireClient {
@@ -194,7 +200,15 @@ impl InMemoryWireClient {
             outgoing: Mutex::new(Vec::new()),
             handshake_done: false,
             request_counter: 0,
+            default_timeout: None,
         }
+    }
+
+    /// Set a default timeout applied to every `read_response` call.
+    /// Without this, `read_response` waits indefinitely for a matching id.
+    pub fn with_default_timeout(mut self, timeout: Duration) -> Self {
+        self.default_timeout = Some(timeout);
+        self
     }
 
     /// Inject an incoming raw wire message for the client to read.
@@ -247,31 +261,47 @@ impl WireClient for InMemoryWireClient {
         &mut self,
         expected_id: &str,
     ) -> Result<T, WireError> {
-        loop {
-            let idx = {
-                let lock = self.pending.lock().await;
-                lock.iter()
-                    .position(|msg| msg.id.as_deref() == Some(expected_id))
-            };
-            if let Some(idx) = idx {
-                let msg = self
-                    .pending
-                    .lock()
-                    .await
-                    .remove(idx)
-                    .ok_or_else(|| WireError::Internal("pending index invalid".to_string()))?;
-                return decode_response(msg, expected_id);
-            }
-
-            match self.incoming.lock().await.pop_front() {
-                Some(msg) if msg.id.as_deref() == Some(expected_id) => {
+        let fut = async {
+            loop {
+                let idx = {
+                    let lock = self.pending.lock().await;
+                    lock.iter()
+                        .position(|msg| msg.id.as_deref() == Some(expected_id))
+                };
+                if let Some(idx) = idx {
+                    let msg = self
+                        .pending
+                        .lock()
+                        .await
+                        .remove(idx)
+                        .ok_or_else(|| WireError::Internal("pending index invalid".to_string()))?;
                     return decode_response(msg, expected_id);
                 }
-                Some(other) => {
-                    self.pending.lock().await.push_back(other);
+
+                match self.incoming.lock().await.pop_front() {
+                    Some(msg) if msg.id.as_deref() == Some(expected_id) => {
+                        return decode_response(msg, expected_id);
+                    }
+                    Some(other) => {
+                        let mut pending = self.pending.lock().await;
+                        if pending.len() >= MAX_PENDING_MESSAGES {
+                            return Err(WireError::Internal(format!(
+                                "pending message buffer overflow ({} entries) waiting for id {:?}",
+                                MAX_PENDING_MESSAGES, expected_id
+                            )));
+                        }
+                        pending.push_back(other);
+                    }
+                    None => return Err(WireError::StreamClosed),
                 }
-                None => return Err(WireError::StreamClosed),
             }
+        };
+
+        match self.default_timeout {
+            Some(d) => tokio::time::timeout(d, fut)
+                .await
+                .map_err(|_| WireError::Timeout(d))?,
+            None => fut.await,
         }
     }
 

@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `TransportWireClient::with_default_timeout(Duration)` and matching field on
+  `InMemoryWireClient` — applies to every `read_response` call. Without it,
+  `read_response` waits indefinitely for the expected id (existing behavior).
+- `transport::MAX_PENDING_MESSAGES` (1024) — caps out-of-order buffer to
+  prevent unbounded memory growth from a misbehaving peer.
+- `Transport::shutdown` default method. `ChildProcessTransport` overrides it
+  to close stdin, wait 3 seconds for child exit, then kill.
 - Wire protocol v1.10 support: `StepRetry` event (v1.10), `BtwBegin` / `BtwEnd` events (v1.9), and `is_summary` field on `DisplayBlock::Diff` (v1.8).
 - Unit and integration tests for `InMemoryWireClient`, `TransportWireClient`, `ChannelTransport`, builders, and error conversions.
 - `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, issue/PR templates.
@@ -22,6 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `TransportWireClient::read_response` no longer hangs forever when a default
+  timeout is set, closing a production hazard called out by `AGENTS.md`.
+- `TransportWireClient::shutdown` now forwards to `Transport::shutdown` instead
+  of being a silent no-op.
 - `Event::ToolCall` envelope type was incorrectly `"function"` instead of `"ToolCall"`. The payload now correctly preserves the inner `type: "function"` discriminator per the v1.10 spec.
 - Removed unused `ApprovalPolicy` enum. It was not referenced by any protocol struct and is not present in the official spec.
 - `Event::ContentPart` serde roundtrip: the inner `ContentPart` carries its own `"type"` field, which conflicted with the `Event` envelope format.

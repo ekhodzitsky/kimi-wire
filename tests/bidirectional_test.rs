@@ -50,7 +50,7 @@ async fn agent_send_request(
     request: Request,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let req = JsonRpcRequest {
-        jsonrpc: JsonRpcVersion::default(),
+        jsonrpc: JsonRpcVersion,
         method: "request".to_string(),
         id: id.to_string(),
         params: request,

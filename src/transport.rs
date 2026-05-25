@@ -29,6 +29,13 @@ use crate::protocol::{
 /// `read_line` to allocate until OOM.
 pub const MAX_WIRE_LINE_LENGTH: usize = 16 * 1024 * 1024;
 
+/// Maximum number of out-of-order wire messages buffered while waiting for a
+/// specific response id.
+///
+/// Without a cap, a misbehaving peer that emits unrelated ids can drive
+/// `pending_messages` to allocate until OOM.
+pub const MAX_PENDING_MESSAGES: usize = 1024;
+
 /// Async transport for reading and writing newline-delimited JSON.
 pub trait Transport: Send {
     /// Read the next line from the transport.
@@ -41,6 +48,19 @@ pub trait Transport: Send {
         &mut self,
         line: &str,
     ) -> impl std::future::Future<Output = Result<(), WireError>> + Send;
+
+    /// Gracefully close the transport.
+    ///
+    /// Default implementation returns `Ok(())`. Implementations that wrap a
+    /// child process, network socket, or other resource should override this
+    /// to release the resource cleanly. Called by
+    /// `TransportWireClient::shutdown`.
+    fn shutdown(self) -> impl std::future::Future<Output = Result<(), WireError>> + Send
+    where
+        Self: Sized,
+    {
+        async { Ok(()) }
+    }
 }
 
 // ============================================================================
@@ -53,6 +73,7 @@ pub struct TransportWireClient<T: Transport> {
     request_id_counter: u64,
     handshake_done: bool,
     pending_messages: VecDeque<RawWireMessage>,
+    default_timeout: Option<Duration>,
 }
 
 impl<T: Transport> TransportWireClient<T> {
@@ -63,12 +84,20 @@ impl<T: Transport> TransportWireClient<T> {
             request_id_counter: 0,
             handshake_done: false,
             pending_messages: VecDeque::new(),
+            default_timeout: None,
         }
     }
 
     /// Consume the client and return the underlying transport.
     pub fn into_transport(self) -> T {
         self.transport
+    }
+
+    /// Set a default timeout applied to every `read_response` call.
+    /// Without this, `read_response` waits indefinitely for a matching id.
+    pub fn with_default_timeout(mut self, timeout: Duration) -> Self {
+        self.default_timeout = Some(timeout);
+        self
     }
 }
 
@@ -111,28 +140,43 @@ impl<T: Transport> WireClient for TransportWireClient<T> {
         &mut self,
         expected_id: &str,
     ) -> Result<Res, WireError> {
-        loop {
-            if let Some(idx) = self
-                .pending_messages
-                .iter()
-                .position(|msg| msg.id.as_deref() == Some(expected_id))
-            {
-                let msg = self
+        let fut = async {
+            loop {
+                if let Some(idx) = self
                     .pending_messages
-                    .remove(idx)
-                    .ok_or_else(|| WireError::Internal("pending index invalid".to_string()))?;
-                return decode_raw_response(msg, expected_id);
-            }
+                    .iter()
+                    .position(|msg| msg.id.as_deref() == Some(expected_id))
+                {
+                    let msg = self
+                        .pending_messages
+                        .remove(idx)
+                        .ok_or_else(|| WireError::Internal("pending index invalid".to_string()))?;
+                    return decode_raw_response(msg, expected_id);
+                }
 
-            let line = match self.transport.read_line().await? {
-                Some(line) => line,
-                None => return Err(WireError::StreamClosed),
-            };
-            let msg: RawWireMessage = serde_json::from_str(&line).map_err(WireError::from)?;
-            if msg.id.as_deref() == Some(expected_id) {
-                return decode_raw_response(msg, expected_id);
+                let line = match self.transport.read_line().await? {
+                    Some(line) => line,
+                    None => return Err(WireError::StreamClosed),
+                };
+                let msg: RawWireMessage = serde_json::from_str(&line).map_err(WireError::from)?;
+                if msg.id.as_deref() == Some(expected_id) {
+                    return decode_raw_response(msg, expected_id);
+                }
+                if self.pending_messages.len() >= MAX_PENDING_MESSAGES {
+                    return Err(WireError::Internal(format!(
+                        "pending message buffer overflow ({} entries) waiting for id {:?}",
+                        MAX_PENDING_MESSAGES, expected_id
+                    )));
+                }
+                self.pending_messages.push_back(msg);
             }
-            self.pending_messages.push_back(msg);
+        };
+
+        match self.default_timeout {
+            Some(d) => tokio::time::timeout(d, fut)
+                .await
+                .map_err(|_| WireError::Timeout(d))?,
+            None => fut.await,
         }
     }
 
@@ -224,7 +268,7 @@ impl<T: Transport> WireClient for TransportWireClient<T> {
     }
 
     async fn shutdown(self) -> Result<(), WireError> {
-        Ok(())
+        self.transport.shutdown().await
     }
 }
 
@@ -251,9 +295,8 @@ fn decode_raw_response<T: DeserializeOwned>(
 /// A transport backed by a child process's stdin/stdout.
 #[derive(Debug)]
 pub struct ChildProcessTransport {
-    #[allow(dead_code)]
-    child: Child,
-    stdin: ChildStdin,
+    child: Option<Child>,
+    stdin: Option<ChildStdin>,
     stdout_reader: FramedRead<ChildStdout, LinesCodec>,
     stderr_handle: Option<tokio::task::JoinHandle<()>>,
     cancel_token: CancellationToken,
@@ -343,8 +386,8 @@ impl ChildProcessTransport {
         });
 
         Ok(Self {
-            child,
-            stdin,
+            child: Some(child),
+            stdin: Some(stdin),
             stdout_reader,
             stderr_handle,
             cancel_token,
@@ -363,9 +406,38 @@ impl Transport for ChildProcessTransport {
     }
 
     async fn write_line(&mut self, line: &str) -> Result<(), WireError> {
-        self.stdin.write_all(line.as_bytes()).await?;
-        self.stdin.write_all(b"\n").await?;
-        self.stdin.flush().await?;
+        let stdin = self
+            .stdin
+            .as_mut()
+            .ok_or(WireError::StreamClosed)?;
+        stdin.write_all(line.as_bytes()).await?;
+        stdin.write_all(b"\n").await?;
+        stdin.flush().await?;
+        Ok(())
+    }
+
+    async fn shutdown(mut self) -> Result<(), WireError> {
+        // Close stdin so the child sees EOF.
+        drop(self.stdin.take());
+
+        // Wait up to 3 seconds for the child to exit gracefully.
+        let grace = Duration::from_secs(3);
+        if let Some(mut child) = self.child.take() {
+            match tokio::time::timeout(grace, child.wait()).await {
+                Ok(Ok(_)) => {}
+                Ok(Err(_)) => {}
+                Err(_) => {
+                    let _ = child.kill().await;
+                }
+            }
+        }
+
+        // Abort the stderr task and cancel the token.
+        self.cancel_token.cancel();
+        if let Some(handle) = self.stderr_handle.take() {
+            handle.abort();
+        }
+
         Ok(())
     }
 }
