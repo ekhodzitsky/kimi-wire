@@ -1,0 +1,36 @@
+# typos-cli configuration for kimi-wire
+# https://github.com/crate-ci/typos
+
+[files]
+# Check all files by default; rely on .gitignore for build artifacts.
+extend-exclude = [
+    "Cargo.lock",
+    "CHANGELOG.md",   # version tags and hashes can look like typos
+]
+
+[default]
+# Lower the threshold so we catch more potential typos in comments/docs.
+check-filename = true
+
+[default.extend-words]
+# Allow legitimate technical terms that the default dictionary may flag.
+"jsonrpc" = "jsonrpc"
+"serde" = "serde"
+"tokio" = "tokio"
+"kimi" = "kimi"
+"redact" = "redact"
+"redacted" = "redacted"
+"stdio" = "stdio"
+"mpsc" = "mpsc"
+"codecov" = "codecov"
+"crates" = "crates"
+"docsrs" = "docsrs"
+"pat" = "pat"
+"oauth" = "oauth"
+"pem" = "pem"
+"rpitit" = "rpitit"
+"vecdeque" = "vecdeque"
+"unbounded" = "unbounded"
+"nocapture" = "nocapture"
+"worktree" = "worktree"
+"moonshot" = "moonshot"
