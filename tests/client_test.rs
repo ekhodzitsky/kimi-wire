@@ -389,3 +389,30 @@ async fn test_read_raw_message_drains_pending() {
     let raw = client.read_raw_message().await.unwrap();
     assert_eq!(raw.id, msg1.id);
 }
+
+#[tokio::test]
+async fn test_in_memory_client_pending_cap() {
+    use kimi_wire::transport::MAX_PENDING_MESSAGES;
+
+    let mut client = InMemoryWireClient::new();
+
+    // Inject MAX_PENDING_MESSAGES + 1 unrelated messages.
+    for i in 0..=MAX_PENDING_MESSAGES {
+        let msg = RawWireMessage {
+            jsonrpc: JsonRpcVersion,
+            id: Some(format!("msg-{}", i)),
+            method: None,
+            params: None,
+            result: Some(serde_json::json!(i)),
+            error: None,
+        };
+        client.inject(msg).await;
+    }
+
+    let err = client.read_response::<serde_json::Value>("wanted").await.unwrap_err();
+    assert!(
+        matches!(&err, WireError::Internal(msg) if msg.contains("buffer overflow")),
+        "expected buffer overflow error, got {:?}",
+        err
+    );
+}

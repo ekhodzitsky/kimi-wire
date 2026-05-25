@@ -355,6 +355,79 @@ async fn test_transport_wire_client_shutdown() {
     client.shutdown().await.unwrap();
 }
 
+#[tokio::test]
+async fn test_read_response_times_out_when_no_matching_id() {
+    let (transport, mut other) = ChannelTransport::pair();
+    let mut client =
+        TransportWireClient::new(transport).with_default_timeout(Duration::from_millis(100));
+
+    // Send an unrelated message so the client has something to read but not match.
+    let msg = RawWireMessage {
+        jsonrpc: JsonRpcVersion,
+        id: Some("other".to_string()),
+        method: None,
+        params: None,
+        result: Some(serde_json::json!({"status": "finished"})),
+        error: None,
+    };
+    other.write_line(&serde_json::to_string(&msg).unwrap()).await.unwrap();
+
+    let err = client.read_response::<PromptResult>("wanted").await.unwrap_err();
+    assert!(matches!(err, WireError::Timeout(d) if d == Duration::from_millis(100)));
+}
+
+#[tokio::test]
+async fn test_read_response_no_timeout_by_default_still_waits() {
+    let (transport, mut other) = ChannelTransport::pair();
+    let mut client = TransportWireClient::new(transport);
+
+    let msg = RawWireMessage {
+        jsonrpc: JsonRpcVersion,
+        id: Some("wanted".to_string()),
+        method: None,
+        params: None,
+        result: Some(serde_json::json!({"status": "finished"})),
+        error: None,
+    };
+
+    // Send the expected message after a short delay.
+    tokio::spawn(async move {
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        other.write_line(&serde_json::to_string(&msg).unwrap()).await.unwrap();
+    });
+
+    let result: PromptResult = client.read_response("wanted").await.unwrap();
+    assert_eq!(result.status, PromptStatus::Finished);
+}
+
+#[tokio::test]
+async fn test_pending_messages_buffer_cap_returns_internal_error() {
+    use kimi_wire::transport::MAX_PENDING_MESSAGES;
+
+    let (transport, mut other) = ChannelTransport::pair();
+    let mut client = TransportWireClient::new(transport);
+
+    // Flood the channel with MAX_PENDING_MESSAGES + 1 unrelated messages.
+    for i in 0..=MAX_PENDING_MESSAGES {
+        let msg = RawWireMessage {
+            jsonrpc: JsonRpcVersion,
+            id: Some(format!("msg-{}", i)),
+            method: None,
+            params: None,
+            result: Some(serde_json::json!(i)),
+            error: None,
+        };
+        other.write_line(&serde_json::to_string(&msg).unwrap()).await.unwrap();
+    }
+
+    let err = client.read_response::<serde_json::Value>("wanted").await.unwrap_err();
+    assert!(
+        matches!(&err, WireError::Internal(msg) if msg.contains("buffer overflow")),
+        "expected buffer overflow error, got {:?}",
+        err
+    );
+}
+
 // ============================================================================
 // MAX_WIRE_LINE_LENGTH
 // ============================================================================
