@@ -126,7 +126,7 @@ pub fn average(items: &[f64]) -> f64 {
 
 ## Wire Protocol Compatibility (Hard Constraints)
 
-This crate implements the Kimi Code CLI Wire Protocol v1.7. Compatibility is not optional.
+This crate implements the Kimi Code CLI Wire Protocol v1.10 (with backward-compatible deserialization for older fields). Compatibility is not optional.
 
 ### 1. Envelope Format
 

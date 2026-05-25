@@ -68,6 +68,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+## Architecture
+
+For protocol lifecycle, bidirectional request handling, object-safety notes, and design rationale, see [`docs/architecture.md`](docs/architecture.md).
+
 ## Feature flags
 
 | Feature | Default | Description |

@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fuzz targets for `Event`, `Request`, and `RawWireMessage` serde roundtrip (`cargo-fuzz`).
 - CI jobs: `cargo-semver-checks`, `cargo-hack` feature powerset, `cargo-fuzz` build.
 - Dependabot configuration for Cargo and GitHub Actions.
+- `docs/architecture.md` covering protocol lifecycle, bidirectional flow, object-safety, and design rationale.
 
 ### Fixed
 
