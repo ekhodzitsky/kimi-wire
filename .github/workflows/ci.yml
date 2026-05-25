@@ -20,6 +20,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
+          components: clippy
       - uses: Swatinem/rust-cache@v2
       - run: cargo test --all-features --locked
       - run: cargo clippy --all-targets --all-features --locked -- -D warnings
@@ -31,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: EmbarkStudios/cargo-deny-action@v1
+      - uses: EmbarkStudios/cargo-deny-action@v2.0.19
         with:
           command: check advisories licenses bans sources
 
@@ -70,7 +71,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@nightly
-      - run: cargo install cargo-fuzz --locked
+      - run: cargo install cargo-fuzz
       - uses: Swatinem/rust-cache@v2
       - run: cargo fuzz build
 
