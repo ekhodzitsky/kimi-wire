@@ -1,9 +1,12 @@
 # `kimi-wire`
 
 [![CI](https://github.com/ekhodzitsky/kimi-wire/actions/workflows/ci.yml/badge.svg)](https://github.com/ekhodzitsky/kimi-wire/actions/workflows/ci.yml)
+[![Security](https://img.shields.io/badge/security-audit-success-green)](https://github.com/ekhodzitsky/kimi-wire/actions/workflows/security-audit.yml)
 [![crates.io](https://img.shields.io/crates/v/kimi-wire.svg)](https://crates.io/crates/kimi-wire)
 [![docs.rs](https://docs.rs/kimi-wire/badge.svg)](https://docs.rs/kimi-wire)
 [![codecov](https://codecov.io/gh/ekhodzitsky/kimi-wire/branch/main/graph/badge.svg)](https://codecov.io/gh/ekhodzitsky/kimi-wire)
+[![MSRV](https://img.shields.io/badge/MSRV-1.80-orange)](https://github.com/ekhodzitsky/kimi-wire/blob/main/Cargo.toml#L11)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Typed Rust client for the [Kimi Code CLI Wire protocol](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/wire-protocol.html).
 
