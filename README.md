@@ -1,7 +1,7 @@
 # `kimi-wire`
 
 [![CI](https://github.com/ekhodzitsky/kimi-wire/actions/workflows/ci.yml/badge.svg)](https://github.com/ekhodzitsky/kimi-wire/actions/workflows/ci.yml)
-[![Security](https://img.shields.io/badge/security-audit-success-green)](https://github.com/ekhodzitsky/kimi-wire/actions/workflows/security-audit.yml)
+[![Security](https://img.shields.io/badge/security%20audit-success-brightgreen)](https://github.com/ekhodzitsky/kimi-wire/actions/workflows/security-audit.yml)
 [![crates.io](https://img.shields.io/crates/v/kimi-wire.svg)](https://crates.io/crates/kimi-wire)
 [![docs.rs](https://docs.rs/kimi-wire/badge.svg)](https://docs.rs/kimi-wire)
 [![codecov](https://codecov.io/gh/ekhodzitsky/kimi-wire/branch/main/graph/badge.svg)](https://codecov.io/gh/ekhodzitsky/kimi-wire)
