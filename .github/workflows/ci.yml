@@ -11,9 +11,11 @@ env:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    name: test (${{ matrix.os }}, ${{ matrix.rust }})
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
         rust: [stable, 1.80.0]
     steps:
       - uses: actions/checkout@v4
@@ -28,6 +30,12 @@ jobs:
         env:
           RUSTDOCFLAGS: -D warnings
 
+  typos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: crate-ci/typos@v1
+
   deny:
     runs-on: ubuntu-latest
     steps:
@@ -35,6 +43,30 @@ jobs:
       - uses: EmbarkStudios/cargo-deny-action@v2.0.19
         with:
           command: check advisories licenses bans sources
+
+  # GitHub Dependency Review scans PR diffs for newly introduced
+  # vulnerable dependencies or license violations. It complements
+  # cargo-deny (which audits the full lockfile) by gating only
+  # *changes* introduced in a pull request.
+  dependency-review:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history is required to diff dependencies between base and head.
+          fetch-depth: 0
+      - uses: actions/dependency-review-action@v4
+        with:
+          # Fail on any severity (low and above).
+          fail-on-severity: low
+          # Only comment when issues are found to avoid PR noise.
+          comment-summary-in-pr: on-failure
+          # License allow-list aligned with deny.toml.
+          allow-licenses: MIT, Apache-2.0, BSD-3-Clause, Unicode-DFS-2016, Unicode-3.0
 
   coverage:
     runs-on: ubuntu-latest
@@ -79,9 +111,72 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history is required to checkout the base branch for baseline comparison.
+          fetch-depth: 0
+
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo check --benches --all-features
+
+      - name: Save baseline from main
+        if: github.event_name == 'pull_request'
+        run: |
+          git stash --include-untracked || true
+          git checkout ${{ github.base_ref }}
+          cargo bench --all-features -- --save-baseline main
+          git checkout ${{ github.head_ref }}
+          git stash pop || true
+
+      - name: Run benchmarks with regression check
+        id: benchmark
+        run: cargo bench --all-features -- --baseline main 2>&1 | tee benchmark.log
+
+      - name: Check for performance regressions (>5%)
+        if: github.event_name == 'pull_request'
+        run: |
+          python3 << 'PYEOF'
+          import re
+          import sys
+
+          with open("benchmark.log") as f:
+              content = f.read()
+
+          # Match criterion change lines followed by "Performance has regressed."
+          # change: [+5.123% +7.234% +9.345%] (p = 0.00 < 0.05)
+          # Performance has regressed.
+          pattern = r'change:\s+\[([+\-][\d.]+)%\s+([+\-][\d.]+)%\s+([+\-][\d.]+)%\][^\n]*\n\s+Performance has regressed\.'
+          matches = re.findall(pattern, content)
+
+          failed = False
+          for lower, typical, upper in matches:
+              lower_val = float(lower)
+              # The lower bound of the confidence interval gives the most
+              # conservative estimate of the regression.
+              if lower_val > 5.0:
+                  print(
+                      f"FAIL: significant regression detected: {lower}% to {upper}% "
+                      f"(typical: {typical}%)"
+                  )
+                  failed = True
+              else:
+                  print(
+                      f"WARNING: minor regression detected: {lower}% to {upper}% "
+                      f"(typical: {typical}%) — below 5% threshold"
+                  )
+
+          if failed:
+              print("\nFailing because at least one benchmark regressed > 5%.")
+              sys.exit(1)
+
+          print("No significant performance regressions (>5%) detected.")
+          PYEOF
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: criterion-report-${{ github.event_name }}-${{ github.sha }}
+          path: target/criterion/
+          retention-days: 30
 
   publish-dry-run:
     runs-on: ubuntu-latest
