@@ -21,9 +21,17 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
       - uses: Swatinem/rust-cache@v2
-      - run: cargo test --all-features
-      - run: cargo clippy --all-targets --all-features
-      - run: cargo doc --no-deps --all-features
+      - name: Determine --locked flag
+        id: flags
+        run: |
+          if [ "${{ matrix.rust }}" = "stable" ]; then
+            echo "locked=--locked" >> "$GITHUB_OUTPUT"
+          fi
+      - run: cargo test --all-features ${{ steps.flags.outputs.locked }}
+      - run: cargo clippy --all-targets --all-features ${{ steps.flags.outputs.locked }} -- -D warnings
+      - run: cargo doc --no-deps --all-features ${{ steps.flags.outputs.locked }}
+        env:
+          RUSTDOCFLAGS: -D warnings
 
   deny:
     runs-on: ubuntu-latest
@@ -40,7 +48,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: taiki-e/install-action@cargo-tarpaulin
       - uses: Swatinem/rust-cache@v2
-      - run: cargo tarpaulin --all-features --out xml --timeout 120
+      - run: cargo tarpaulin --all-features --out xml --timeout 120 --fail-under 90
       - uses: codecov/codecov-action@v4
         with:
           files: ./cobertura.xml
@@ -61,7 +69,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: taiki-e/install-action@cargo-hack
       - uses: Swatinem/rust-cache@v2
-      - run: cargo hack check --feature-powerset --no-dev-deps
+      - run: cargo hack check --feature-powerset --locked
 
   fuzz:
     runs-on: ubuntu-latest
@@ -86,4 +94,4 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo publish --dry-run --all-features
+      - run: cargo publish --dry-run --all-features --locked
