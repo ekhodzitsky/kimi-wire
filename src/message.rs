@@ -1,7 +1,7 @@
 //! Message parsing and dispatch for the Wire protocol.
 //!
-//! Converts raw [`RawWireMessage`]s into typed dispatch enums
-//! ([`WireMessage`]) so callers don't have to manually inspect
+//! Converts raw [`crate::protocol::RawWireMessage`]s into typed dispatch enums
+//! ([`WireMessage`](crate::message::WireMessage)) so callers don't have to manually inspect
 //! `method`, `id`, `result`, and `error` fields.
 
 use serde_json::Value;

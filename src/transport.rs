@@ -331,6 +331,8 @@ impl ChildProcessTransport {
                     child = Some(spawned);
                     break;
                 }
+                // ETXTBSY (Text file busy) on Unix-like systems — the binary may
+                // still be written by another process. Retry a couple of times.
                 Err(err) if err.raw_os_error() == Some(26) && attempt < 2 => {
                     tokio::time::sleep(Duration::from_millis(25)).await;
                 }

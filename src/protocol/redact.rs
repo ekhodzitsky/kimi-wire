@@ -26,14 +26,7 @@ static SECRET_VALUE_PATTERNS: LazyLock<Vec<regex::Regex>> = LazyLock::new(|| {
     ];
     patterns
         .iter()
-        .map(|&p| {
-            regex::Regex::new(p).unwrap_or_else(|_| {
-                // Invariant: all patterns are literal strings shipped in the
-                // binary. They are validated by the regex crate and by the
-                // test suite (test_redact_value_patterns).
-                unreachable!("static regex pattern is invalid: {p}")
-            })
-        })
+        .filter_map(|&p| regex::Regex::new(p).ok())
         .collect()
 });
 
@@ -158,6 +151,13 @@ mod tests {
             redacted["code"],
             "let token = std::env::var(\"GITHUB_TOKEN\");"
         );
+    }
+
+    #[test]
+    fn test_all_secret_patterns_compile() {
+        // If a pattern is invalid it is silently skipped by filter_map,
+        // so this test guarantees we haven't lost any defenses.
+        assert_eq!(SECRET_VALUE_PATTERNS.len(), 6);
     }
 
     #[test]

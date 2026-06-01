@@ -46,7 +46,7 @@ pub mod client_ext;
 pub mod dispatch;
 /// Error types for wire protocol failures.
 pub mod error;
-/// Message parsing: `RawWireMessage` → typed [`WireMessage`].
+/// Message parsing: `RawWireMessage` → typed [`WireMessage`](crate::message::WireMessage).
 pub mod message;
 /// Protocol types: JSON-RPC, events, requests, methods, and content parts.
 pub mod protocol;

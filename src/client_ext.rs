@@ -80,7 +80,10 @@ impl EventExt for Event {
     }
 
     fn payload(&self) -> serde_json::Value {
-        serde_json::to_value(self).unwrap_or_default()
+        match serde_json::to_value(self) {
+            Ok(v) => v,
+            Err(_) => serde_json::Value::Null,
+        }
     }
 }
 

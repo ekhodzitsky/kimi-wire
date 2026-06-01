@@ -1,7 +1,7 @@
 //! Ready-made dispatch loop for wire protocol conversations.
 //!
-//! [`process_messages`] runs an async loop that reads incoming messages,
-//! parses them, and delegates to a user-provided handler.  Timeouts and
+//! [`process_messages`](crate::dispatch::process_messages) runs an async loop that reads incoming messages,
+//! parses them, and delegates to a user-provided handler. Timeouts and
 //! parse errors are handled internally so the caller only has to implement
 //! business logic.
 
@@ -72,18 +72,6 @@ where
                 continue;
             }
         };
-
-        match &msg {
-            WireMessage::Request(req) if req.method != "request" => {
-                warn!(method = %req.method, "Unknown wire request method, skipping");
-                continue;
-            }
-            WireMessage::Event(ev) if ev.method != "event" => {
-                warn!(method = %ev.method, "Unknown wire event method, skipping");
-                continue;
-            }
-            _ => {}
-        }
 
         if let Some(response) = handler(msg).await? {
             client.send_response(&response.id, &response.result).await?;

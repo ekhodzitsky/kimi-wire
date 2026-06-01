@@ -35,7 +35,6 @@ pub enum WireError {
     JsonSerialize(String),
 
     /// The server returned a JSON-RPC error response.
-    /// The server returned a JSON-RPC error response.
     #[error("wire request failed: {message} (code: {code})")]
     RequestFailed {
         /// JSON-RPC error code.
