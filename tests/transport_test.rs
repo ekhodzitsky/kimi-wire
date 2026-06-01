@@ -91,7 +91,10 @@ async fn test_transport_wire_client_read_raw_message() {
         result: Some(serde_json::json!(42)),
         error: None,
     };
-    other.write_line(&serde_json::to_string(&msg).unwrap()).await.unwrap();
+    other
+        .write_line(&serde_json::to_string(&msg).unwrap())
+        .await
+        .unwrap();
 
     let read = client.read_raw_message().await.unwrap();
     assert_eq!(read.id, Some("1".to_string()));
@@ -133,7 +136,10 @@ async fn test_transport_wire_client_read_response() {
         result: Some(serde_json::json!({"status": "finished"})),
         error: None,
     };
-    other.write_line(&serde_json::to_string(&msg).unwrap()).await.unwrap();
+    other
+        .write_line(&serde_json::to_string(&msg).unwrap())
+        .await
+        .unwrap();
 
     let result = client.read_response::<PromptResult>("req-1").await.unwrap();
     assert_eq!(result.status, PromptStatus::Finished);
@@ -161,8 +167,14 @@ async fn test_transport_wire_client_read_response_buffers_out_of_order() {
         error: None,
     };
 
-    other.write_line(&serde_json::to_string(&msg1).unwrap()).await.unwrap();
-    other.write_line(&serde_json::to_string(&msg2).unwrap()).await.unwrap();
+    other
+        .write_line(&serde_json::to_string(&msg1).unwrap())
+        .await
+        .unwrap();
+    other
+        .write_line(&serde_json::to_string(&msg2).unwrap())
+        .await
+        .unwrap();
 
     let result: PromptResult = client.read_response("wanted").await.unwrap();
     assert_eq!(result.status, PromptStatus::Cancelled);
@@ -189,9 +201,15 @@ async fn test_transport_wire_client_read_response_error() {
             data: None,
         }),
     };
-    other.write_line(&serde_json::to_string(&msg).unwrap()).await.unwrap();
+    other
+        .write_line(&serde_json::to_string(&msg).unwrap())
+        .await
+        .unwrap();
 
-    let err = client.read_response::<PromptResult>("err").await.unwrap_err();
+    let err = client
+        .read_response::<PromptResult>("err")
+        .await
+        .unwrap_err();
     assert!(matches!(err, WireError::RequestFailed { code: -32600, message } if message == "bad"));
 }
 
@@ -200,7 +218,10 @@ async fn test_transport_wire_client_send_response() {
     let (transport, mut other) = ChannelTransport::pair();
     let mut client = TransportWireClient::new(transport);
 
-    let result = PromptResult { status: PromptStatus::Finished, steps: None };
+    let result = PromptResult {
+        status: PromptStatus::Finished,
+        steps: None,
+    };
     client.send_response("id-1", &result).await.unwrap();
 
     let line = other.read_line().await.unwrap().unwrap();
@@ -241,14 +262,20 @@ async fn test_transport_wire_client_initialize_success() {
             id: req["id"].as_str().unwrap().to_string(),
             result: InitializeResult {
                 protocol_version: "1.10".to_string(),
-                server: ServerInfo { name: "kimi".to_string(), version: "0.1".to_string() },
+                server: ServerInfo {
+                    name: "kimi".to_string(),
+                    version: "0.1".to_string(),
+                },
                 slash_commands: vec![],
                 external_tools: None,
                 capabilities: None,
                 hooks: None,
             },
         };
-        other.write_line(&serde_json::to_string(&resp).unwrap()).await.unwrap();
+        other
+            .write_line(&serde_json::to_string(&resp).unwrap())
+            .await
+            .unwrap();
     });
 
     let result = client.initialize(params).await.unwrap();
@@ -277,11 +304,17 @@ async fn test_transport_wire_client_initialize_method_not_found() {
                 data: None,
             },
         };
-        other.write_line(&serde_json::to_string(&resp).unwrap()).await.unwrap();
+        other
+            .write_line(&serde_json::to_string(&resp).unwrap())
+            .await
+            .unwrap();
     });
 
     let result = client.initialize(params).await.unwrap();
-    assert_eq!(result.protocol_version, kimi_wire::WIRE_PROTOCOL_LEGACY_VERSION);
+    assert_eq!(
+        result.protocol_version,
+        kimi_wire::WIRE_PROTOCOL_LEGACY_VERSION
+    );
     assert!(client.is_handshake_done());
     responder.await.unwrap();
 }
@@ -306,11 +339,16 @@ async fn test_transport_wire_client_initialize_other_error() {
                 data: None,
             },
         };
-        other.write_line(&serde_json::to_string(&resp).unwrap()).await.unwrap();
+        other
+            .write_line(&serde_json::to_string(&resp).unwrap())
+            .await
+            .unwrap();
     });
 
     let err = client.initialize(params).await.unwrap_err();
-    assert!(matches!(err, WireError::RequestFailed { code: -32600, message } if message == "parse error"));
+    assert!(
+        matches!(err, WireError::RequestFailed { code: -32600, message } if message == "parse error")
+    );
     responder.await.unwrap();
 }
 
@@ -337,9 +375,15 @@ async fn test_transport_wire_client_prompt() {
         let resp = JsonRpcSuccessResponse {
             jsonrpc: JsonRpcVersion::V2,
             id: req["id"].as_str().unwrap().to_string(),
-            result: PromptResult { status: PromptStatus::Finished, steps: Some(1) },
+            result: PromptResult {
+                status: PromptStatus::Finished,
+                steps: Some(1),
+            },
         };
-        other.write_line(&serde_json::to_string(&resp).unwrap()).await.unwrap();
+        other
+            .write_line(&serde_json::to_string(&resp).unwrap())
+            .await
+            .unwrap();
     });
 
     let result = client.prompt("hello").await.unwrap();
@@ -370,9 +414,15 @@ async fn test_read_response_times_out_when_no_matching_id() {
         result: Some(serde_json::json!({"status": "finished"})),
         error: None,
     };
-    other.write_line(&serde_json::to_string(&msg).unwrap()).await.unwrap();
+    other
+        .write_line(&serde_json::to_string(&msg).unwrap())
+        .await
+        .unwrap();
 
-    let err = client.read_response::<PromptResult>("wanted").await.unwrap_err();
+    let err = client
+        .read_response::<PromptResult>("wanted")
+        .await
+        .unwrap_err();
     assert!(matches!(err, WireError::Timeout(d) if d == Duration::from_millis(100)));
 }
 
@@ -393,7 +443,10 @@ async fn test_read_response_no_timeout_by_default_still_waits() {
     // Send the expected message after a short delay.
     tokio::spawn(async move {
         tokio::time::sleep(Duration::from_millis(50)).await;
-        other.write_line(&serde_json::to_string(&msg).unwrap()).await.unwrap();
+        other
+            .write_line(&serde_json::to_string(&msg).unwrap())
+            .await
+            .unwrap();
     });
 
     let result: PromptResult = client.read_response("wanted").await.unwrap();
@@ -417,10 +470,16 @@ async fn test_pending_messages_buffer_cap_returns_internal_error() {
             result: Some(serde_json::json!(i)),
             error: None,
         };
-        other.write_line(&serde_json::to_string(&msg).unwrap()).await.unwrap();
+        other
+            .write_line(&serde_json::to_string(&msg).unwrap())
+            .await
+            .unwrap();
     }
 
-    let err = client.read_response::<serde_json::Value>("wanted").await.unwrap_err();
+    let err = client
+        .read_response::<serde_json::Value>("wanted")
+        .await
+        .unwrap_err();
     assert!(
         matches!(&err, WireError::Internal(msg) if msg.contains("buffer overflow")),
         "expected buffer overflow error, got {:?}",
@@ -434,10 +493,7 @@ async fn test_pending_messages_buffer_cap_returns_internal_error() {
 
 #[test]
 fn test_max_wire_line_length_value() {
-    assert_eq!(
-        kimi_wire::transport::MAX_WIRE_LINE_LENGTH,
-        16 * 1024 * 1024
-    );
+    assert_eq!(kimi_wire::transport::MAX_WIRE_LINE_LENGTH, 16 * 1024 * 1024);
 }
 
 #[tokio::test]

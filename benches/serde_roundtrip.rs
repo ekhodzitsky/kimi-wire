@@ -3,7 +3,9 @@ use kimi_wire::protocol::*;
 
 fn bench_event_turn_begin_roundtrip(c: &mut Criterion) {
     let event = Event::TurnBegin {
-        user_input: UserInput::Text("hello world, this is a moderately sized user input for benchmarking purposes".into()),
+        user_input: UserInput::Text(
+            "hello world, this is a moderately sized user input for benchmarking purposes".into(),
+        ),
     };
 
     c.bench_function("event_turn_begin_roundtrip", |b| {
@@ -48,7 +50,8 @@ fn bench_jsonrpc_request_roundtrip(c: &mut Criterion) {
     c.bench_function("jsonrpc_request_roundtrip", |b| {
         b.iter(|| {
             let json = serde_json::to_string(black_box(&req)).unwrap();
-            let _back: JsonRpcRequest<InitializeParams> = serde_json::from_str(black_box(&json)).unwrap();
+            let _back: JsonRpcRequest<InitializeParams> =
+                serde_json::from_str(black_box(&json)).unwrap();
         })
     });
 }

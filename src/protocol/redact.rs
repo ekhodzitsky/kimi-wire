@@ -26,7 +26,14 @@ static SECRET_VALUE_PATTERNS: LazyLock<Vec<regex::Regex>> = LazyLock::new(|| {
     ];
     patterns
         .iter()
-        .map(|&p| regex::Regex::new(p).expect("static regex is valid"))
+        .map(|&p| {
+            regex::Regex::new(p).unwrap_or_else(|_| {
+                // Invariant: all patterns are literal strings shipped in the
+                // binary. They are validated by the regex crate and by the
+                // test suite (test_redact_value_patterns).
+                unreachable!("static regex pattern is invalid: {p}")
+            })
+        })
         .collect()
 });
 
@@ -96,7 +103,10 @@ mod tests {
         let redacted = redact_secrets(&raw);
         assert_eq!(redacted["api_key"], REDACTED_SECRET);
         assert_eq!(redacted["nested"]["token"], REDACTED_SECRET);
-        assert_eq!(redacted["nested"]["headers"]["authorization"], REDACTED_SECRET);
+        assert_eq!(
+            redacted["nested"]["headers"]["authorization"],
+            REDACTED_SECRET
+        );
         assert_eq!(redacted["nested"]["token_usage"], 42);
         assert_eq!(redacted["items"][0]["password"], REDACTED_SECRET);
         assert_eq!(redacted["items"][1]["safe"], "value");
@@ -140,8 +150,14 @@ mod tests {
         });
         let redacted = redact_secrets(&raw);
         assert_eq!(redacted["summary"], "rotated the github token quarterly");
-        assert_eq!(redacted["url"], "https://docs.example.com/auth/api-key.html");
-        assert_eq!(redacted["code"], "let token = std::env::var(\"GITHUB_TOKEN\");");
+        assert_eq!(
+            redacted["url"],
+            "https://docs.example.com/auth/api-key.html"
+        );
+        assert_eq!(
+            redacted["code"],
+            "let token = std::env::var(\"GITHUB_TOKEN\");"
+        );
     }
 
     #[test]

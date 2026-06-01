@@ -1,9 +1,6 @@
 use std::time::Duration;
 
-use kimi_wire::{
-    protocol::*,
-    InMemoryWireClient, WireClient, WireError,
-};
+use kimi_wire::{protocol::*, InMemoryWireClient, WireClient, WireError};
 
 // ============================================================================
 // InMemoryWireClient basics
@@ -158,7 +155,10 @@ async fn test_read_response_buffers_out_of_order() {
 #[tokio::test]
 async fn test_read_response_empty_queue() {
     let mut client = InMemoryWireClient::new();
-    let err = client.read_response::<PromptResult>("missing").await.unwrap_err();
+    let err = client
+        .read_response::<PromptResult>("missing")
+        .await
+        .unwrap_err();
     assert!(matches!(err, WireError::StreamClosed));
 }
 
@@ -179,8 +179,13 @@ async fn test_read_response_json_rpc_error() {
     };
     client.inject(msg).await;
 
-    let err = client.read_response::<PromptResult>("err").await.unwrap_err();
-    assert!(matches!(err, WireError::RequestFailed { code: -32600, message } if message == "bad request"));
+    let err = client
+        .read_response::<PromptResult>("err")
+        .await
+        .unwrap_err();
+    assert!(
+        matches!(err, WireError::RequestFailed { code: -32600, message } if message == "bad request")
+    );
 }
 
 #[tokio::test]
@@ -196,7 +201,10 @@ async fn test_read_response_missing_result() {
     };
     client.inject(msg).await;
 
-    let err = client.read_response::<PromptResult>("noresult").await.unwrap_err();
+    let err = client
+        .read_response::<PromptResult>("noresult")
+        .await
+        .unwrap_err();
     assert!(matches!(err, WireError::Internal(_)));
 }
 
@@ -207,7 +215,10 @@ async fn test_read_response_missing_result() {
 #[tokio::test]
 async fn test_send_response_serializes_ok() {
     let mut client = InMemoryWireClient::new();
-    let result = PromptResult { status: PromptStatus::Finished, steps: None };
+    let result = PromptResult {
+        status: PromptStatus::Finished,
+        steps: None,
+    };
     client.send_response("id-42", &result).await.unwrap();
 
     let outgoing = client.outgoing().await;
@@ -382,7 +393,10 @@ async fn test_read_raw_message_drains_pending() {
     client.inject(msg1.clone()).await;
 
     // read_response buffers msg1 into pending because id does not match.
-    let err = client.read_response::<PromptResult>("wanted").await.unwrap_err();
+    let err = client
+        .read_response::<PromptResult>("wanted")
+        .await
+        .unwrap_err();
     assert!(matches!(err, WireError::StreamClosed));
 
     // read_raw_message should drain pending first.
@@ -409,7 +423,10 @@ async fn test_in_memory_client_pending_cap() {
         client.inject(msg).await;
     }
 
-    let err = client.read_response::<serde_json::Value>("wanted").await.unwrap_err();
+    let err = client
+        .read_response::<serde_json::Value>("wanted")
+        .await
+        .unwrap_err();
     assert!(
         matches!(&err, WireError::Internal(msg) if msg.contains("buffer overflow")),
         "expected buffer overflow error, got {:?}",

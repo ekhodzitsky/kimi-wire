@@ -194,12 +194,7 @@ impl<T: Transport> WireClient for TransportWireClient<T> {
         self.transport.write_line(&line).await
     }
 
-    async fn send_error(
-        &mut self,
-        id: &str,
-        code: i32,
-        message: &str,
-    ) -> Result<(), WireError> {
+    async fn send_error(&mut self, id: &str, code: i32, message: &str) -> Result<(), WireError> {
         let resp = JsonRpcErrorResponse {
             jsonrpc: crate::protocol::JsonRpcVersion::V2,
             id: id.to_string(),
@@ -345,8 +340,8 @@ impl ChildProcessTransport {
             }
         }
 
-        let mut child = child
-            .ok_or_else(|| WireError::SpawnFailed("all spawn attempts failed".to_string()))?;
+        let mut child =
+            child.ok_or_else(|| WireError::SpawnFailed("all spawn attempts failed".to_string()))?;
         let stdin = child
             .stdin
             .take()
@@ -406,10 +401,7 @@ impl Transport for ChildProcessTransport {
     }
 
     async fn write_line(&mut self, line: &str) -> Result<(), WireError> {
-        let stdin = self
-            .stdin
-            .as_mut()
-            .ok_or(WireError::StreamClosed)?;
+        let stdin = self.stdin.as_mut().ok_or(WireError::StreamClosed)?;
         stdin.write_all(line.as_bytes()).await?;
         stdin.write_all(b"\n").await?;
         stdin.flush().await?;
@@ -467,10 +459,7 @@ impl ChannelTransport {
     pub fn pair() -> (Self, Self) {
         let (tx1, rx1) = tokio::sync::mpsc::unbounded_channel();
         let (tx2, rx2) = tokio::sync::mpsc::unbounded_channel();
-        (
-            Self { rx: rx1, tx: tx2 },
-            Self { rx: rx2, tx: tx1 },
-        )
+        (Self { rx: rx1, tx: tx2 }, Self { rx: rx2, tx: tx1 })
     }
 }
 

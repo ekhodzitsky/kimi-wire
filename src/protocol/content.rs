@@ -40,7 +40,9 @@ impl From<String> for ContentPart {
 
 impl From<&str> for ContentPart {
     fn from(value: &str) -> Self {
-        ContentPart::Text(TextPart { text: value.to_string() })
+        ContentPart::Text(TextPart {
+            text: value.to_string(),
+        })
     }
 }
 

@@ -158,9 +158,13 @@ pub enum Event {
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub(crate) enum FlatEvent {
-    TurnBegin { user_input: UserInput },
+    TurnBegin {
+        user_input: UserInput,
+    },
     TurnEnd,
-    StepBegin { n: u32 },
+    StepBegin {
+        n: u32,
+    },
     StepInterrupted,
     StepRetry {
         n: u32,
@@ -204,8 +208,13 @@ pub(crate) enum FlatEvent {
         subagent_type: Option<String>,
         event: SubagentEventPayload,
     },
-    SteerInput { user_input: UserInput },
-    BtwBegin { id: String, question: String },
+    SteerInput {
+        user_input: UserInput,
+    },
+    BtwBegin {
+        id: String,
+        question: String,
+    },
     BtwEnd {
         id: String,
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -213,9 +222,22 @@ pub(crate) enum FlatEvent {
         #[serde(skip_serializing_if = "Option::is_none")]
         error: Option<String>,
     },
-    PlanDisplay { content: String, file_path: String },
-    HookTriggered { event: String, target: String, hook_count: u32 },
-    HookResolved { event: String, target: String, action: HookAction, reason: String, duration_ms: u64 },
+    PlanDisplay {
+        content: String,
+        file_path: String,
+    },
+    HookTriggered {
+        event: String,
+        target: String,
+        hook_count: u32,
+    },
+    HookResolved {
+        event: String,
+        target: String,
+        action: HookAction,
+        reason: String,
+        duration_ms: u64,
+    },
 }
 
 impl From<Event> for FlatEvent {
@@ -225,22 +247,98 @@ impl From<Event> for FlatEvent {
             Event::TurnEnd => FlatEvent::TurnEnd,
             Event::StepBegin { n } => FlatEvent::StepBegin { n },
             Event::StepInterrupted => FlatEvent::StepInterrupted,
-            Event::StepRetry { n, next_attempt, max_attempts, wait_s, error_type, status_code } => FlatEvent::StepRetry { n, next_attempt, max_attempts, wait_s, error_type, status_code },
+            Event::StepRetry {
+                n,
+                next_attempt,
+                max_attempts,
+                wait_s,
+                error_type,
+                status_code,
+            } => FlatEvent::StepRetry {
+                n,
+                next_attempt,
+                max_attempts,
+                wait_s,
+                error_type,
+                status_code,
+            },
             Event::CompactionBegin => FlatEvent::CompactionBegin,
             Event::CompactionEnd => FlatEvent::CompactionEnd,
             Event::StatusUpdate(s) => FlatEvent::StatusUpdate(s),
             Event::ContentPart(c) => FlatEvent::ContentPart(c),
-            Event::ToolCall { id, function, extras } => FlatEvent::ToolCall { id, function, extras },
+            Event::ToolCall {
+                id,
+                function,
+                extras,
+            } => FlatEvent::ToolCall {
+                id,
+                function,
+                extras,
+            },
             Event::ToolCallPart { arguments_part } => FlatEvent::ToolCallPart { arguments_part },
-            Event::ToolResult { tool_call_id, return_value } => FlatEvent::ToolResult { tool_call_id, return_value },
-            Event::ApprovalResponse { request_id, response, feedback } => FlatEvent::ApprovalResponse { request_id, response, feedback },
-            Event::SubagentEvent { parent_tool_call_id, agent_id, subagent_type, event } => FlatEvent::SubagentEvent { parent_tool_call_id, agent_id, subagent_type, event },
+            Event::ToolResult {
+                tool_call_id,
+                return_value,
+            } => FlatEvent::ToolResult {
+                tool_call_id,
+                return_value,
+            },
+            Event::ApprovalResponse {
+                request_id,
+                response,
+                feedback,
+            } => FlatEvent::ApprovalResponse {
+                request_id,
+                response,
+                feedback,
+            },
+            Event::SubagentEvent {
+                parent_tool_call_id,
+                agent_id,
+                subagent_type,
+                event,
+            } => FlatEvent::SubagentEvent {
+                parent_tool_call_id,
+                agent_id,
+                subagent_type,
+                event,
+            },
             Event::SteerInput { user_input } => FlatEvent::SteerInput { user_input },
             Event::BtwBegin { id, question } => FlatEvent::BtwBegin { id, question },
-            Event::BtwEnd { id, response, error } => FlatEvent::BtwEnd { id, response, error },
-            Event::PlanDisplay { content, file_path } => FlatEvent::PlanDisplay { content, file_path },
-            Event::HookTriggered { event, target, hook_count } => FlatEvent::HookTriggered { event, target, hook_count },
-            Event::HookResolved { event, target, action, reason, duration_ms } => FlatEvent::HookResolved { event, target, action, reason, duration_ms },
+            Event::BtwEnd {
+                id,
+                response,
+                error,
+            } => FlatEvent::BtwEnd {
+                id,
+                response,
+                error,
+            },
+            Event::PlanDisplay { content, file_path } => {
+                FlatEvent::PlanDisplay { content, file_path }
+            }
+            Event::HookTriggered {
+                event,
+                target,
+                hook_count,
+            } => FlatEvent::HookTriggered {
+                event,
+                target,
+                hook_count,
+            },
+            Event::HookResolved {
+                event,
+                target,
+                action,
+                reason,
+                duration_ms,
+            } => FlatEvent::HookResolved {
+                event,
+                target,
+                action,
+                reason,
+                duration_ms,
+            },
         }
     }
 }
@@ -282,22 +380,98 @@ impl From<FlatEvent> for Event {
             FlatEvent::TurnEnd => Event::TurnEnd,
             FlatEvent::StepBegin { n } => Event::StepBegin { n },
             FlatEvent::StepInterrupted => Event::StepInterrupted,
-            FlatEvent::StepRetry { n, next_attempt, max_attempts, wait_s, error_type, status_code } => Event::StepRetry { n, next_attempt, max_attempts, wait_s, error_type, status_code },
+            FlatEvent::StepRetry {
+                n,
+                next_attempt,
+                max_attempts,
+                wait_s,
+                error_type,
+                status_code,
+            } => Event::StepRetry {
+                n,
+                next_attempt,
+                max_attempts,
+                wait_s,
+                error_type,
+                status_code,
+            },
             FlatEvent::CompactionBegin => Event::CompactionBegin,
             FlatEvent::CompactionEnd => Event::CompactionEnd,
             FlatEvent::StatusUpdate(s) => Event::StatusUpdate(s),
             FlatEvent::ContentPart(c) => Event::ContentPart(c),
-            FlatEvent::ToolCall { id, function, extras } => Event::ToolCall { id, function, extras },
+            FlatEvent::ToolCall {
+                id,
+                function,
+                extras,
+            } => Event::ToolCall {
+                id,
+                function,
+                extras,
+            },
             FlatEvent::ToolCallPart { arguments_part } => Event::ToolCallPart { arguments_part },
-            FlatEvent::ToolResult { tool_call_id, return_value } => Event::ToolResult { tool_call_id, return_value },
-            FlatEvent::ApprovalResponse { request_id, response, feedback } => Event::ApprovalResponse { request_id, response, feedback },
-            FlatEvent::SubagentEvent { parent_tool_call_id, agent_id, subagent_type, event } => Event::SubagentEvent { parent_tool_call_id, agent_id, subagent_type, event },
+            FlatEvent::ToolResult {
+                tool_call_id,
+                return_value,
+            } => Event::ToolResult {
+                tool_call_id,
+                return_value,
+            },
+            FlatEvent::ApprovalResponse {
+                request_id,
+                response,
+                feedback,
+            } => Event::ApprovalResponse {
+                request_id,
+                response,
+                feedback,
+            },
+            FlatEvent::SubagentEvent {
+                parent_tool_call_id,
+                agent_id,
+                subagent_type,
+                event,
+            } => Event::SubagentEvent {
+                parent_tool_call_id,
+                agent_id,
+                subagent_type,
+                event,
+            },
             FlatEvent::SteerInput { user_input } => Event::SteerInput { user_input },
             FlatEvent::BtwBegin { id, question } => Event::BtwBegin { id, question },
-            FlatEvent::BtwEnd { id, response, error } => Event::BtwEnd { id, response, error },
-            FlatEvent::PlanDisplay { content, file_path } => Event::PlanDisplay { content, file_path },
-            FlatEvent::HookTriggered { event, target, hook_count } => Event::HookTriggered { event, target, hook_count },
-            FlatEvent::HookResolved { event, target, action, reason, duration_ms } => Event::HookResolved { event, target, action, reason, duration_ms },
+            FlatEvent::BtwEnd {
+                id,
+                response,
+                error,
+            } => Event::BtwEnd {
+                id,
+                response,
+                error,
+            },
+            FlatEvent::PlanDisplay { content, file_path } => {
+                Event::PlanDisplay { content, file_path }
+            }
+            FlatEvent::HookTriggered {
+                event,
+                target,
+                hook_count,
+            } => Event::HookTriggered {
+                event,
+                target,
+                hook_count,
+            },
+            FlatEvent::HookResolved {
+                event,
+                target,
+                action,
+                reason,
+                duration_ms,
+            } => Event::HookResolved {
+                event,
+                target,
+                action,
+                reason,
+                duration_ms,
+            },
         }
     }
 }
@@ -328,7 +502,11 @@ impl Serialize for Event {
             }
             // ToolCall payload carries an inner `type: "function"` discriminator
             // that must be preserved in the payload, separate from the envelope type.
-            Event::ToolCall { id, function, extras } => {
+            Event::ToolCall {
+                id,
+                function,
+                extras,
+            } => {
                 #[derive(Serialize)]
                 struct ToolCallPayload<'a> {
                     #[serde(rename = "type")]
@@ -361,7 +539,11 @@ impl Serialize for Event {
                     .remove("type")
                     .and_then(|v| v.as_str().map(String::from))
                     .ok_or_else(|| serde::ser::Error::custom("missing type"))?;
-                EventEnvelope { type_name, payload: value }.serialize(serializer)
+                EventEnvelope {
+                    type_name,
+                    payload: value,
+                }
+                .serialize(serializer)
             }
         }
     }

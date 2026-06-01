@@ -82,7 +82,11 @@ impl Serialize for Request {
             .remove("type")
             .and_then(|v| v.as_str().map(String::from))
             .ok_or_else(|| serde::ser::Error::custom("missing type"))?;
-        RequestEnvelope { type_name, payload: value }.serialize(serializer)
+        RequestEnvelope {
+            type_name,
+            payload: value,
+        }
+        .serialize(serializer)
     }
 }
 
@@ -91,7 +95,10 @@ impl<'de> Deserialize<'de> for Request {
         let envelope = RequestEnvelope::deserialize(deserializer)?;
         let mut value = envelope.payload;
         if let Some(obj) = value.as_object_mut() {
-            obj.insert("type".to_string(), serde_json::Value::String(envelope.type_name));
+            obj.insert(
+                "type".to_string(),
+                serde_json::Value::String(envelope.type_name),
+            );
         }
         let flat: FlatRequest = serde_json::from_value(value).map_err(serde::de::Error::custom)?;
         Ok(Request::from(flat))
