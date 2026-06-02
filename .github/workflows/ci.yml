@@ -172,7 +172,7 @@ jobs:
           PYEOF
 
       - name: Upload benchmark results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: criterion-report-${{ github.event_name }}-${{ github.sha }}
           path: target/criterion/
