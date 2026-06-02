@@ -25,7 +25,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-kimi-wire = "0.3"
+kimi-wire = "0.4"
 ```
 
 ### Mock client (testing)

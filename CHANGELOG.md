@@ -7,8 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-06-02
+
 ### Added
 
+- `TransportWireClient::with_max_io_retries(u32)` builder (capped at 5) — retries
+  transient `Io` / `Timeout` errors inside `read_response` with exponential
+  backoff (`50 ms × 2^attempt`).
+- Structured `tracing` spans: `info!` in `ChildProcessTransport::spawn`,
+  `warn!` in `dispatch::process_messages`, `trace!` in transport read/write.
+- `#[must_use]` on all builder methods returning `Self`.
+- `const fn` on infallible constructors and accessors (`Event::type_name`,
+  `JsonRpcVersion::as_str`, `InitializeParams` / `DisplayBlock` /
+  `ToolReturnValue` builders, `with_default_timeout`, `with_max_io_retries`).
+- `Eq` derive alongside `PartialEq` on all comparable protocol types.
+- `impl Debug for TransportWireClient<T>` via `finish_non_exhaustive`.
 - Integration tests for `parse_wire_message` (`tests/message_test.rs`),
   `WireClientExt` / `EventExt` / `RequestExt` (`tests/client_ext_test.rs`), and
   `process_messages` (`tests/dispatch_test.rs`).
@@ -16,17 +29,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Removed duplicate doc comments in `WireError` variants.
-- Replaced `unwrap_or_default` in `EventExt::payload` with a safe `match`.
-- Replaced `unreachable!` in `redact.rs` regex initialization with a graceful
-  `filter_map` + dedicated compile-time guard test.
-- Removed dead `method != "request"` / `method != "event"` checks from
-  `dispatch.rs` after `parse_wire_message` guarantees.
-- Documented magic number `26` (`ETXTBSY`) in `ChildProcessTransport::spawn`.
+- MSRV 1.80 compatibility: pinned `proptest` to 1.6.0 (1.11 requires Rust 1.85).
+- Deadlock risk (`clippy::significant_drop_in_scrutinee`): hoisted `MutexGuard`
+  from `if let` / `match` scrutinee in `read_raw_message` and `read_response`.
+- Feature-gating: `dispatch` module and tests gated behind `process`;
+  `redact_secrets` re-export gated behind `redact`.
+- `child.kill().await` in `shutdown` now has `#[allow(unused_must_use)]` + comment
+  per `AGENTS.md` error-handling doctrine.
+- Lowercased `thiserror` display strings (e.g. `json parse error`).
+- Removed duplicate doc comment in `WireError::UnexpectedResponseId`.
+- Removed dead `master` branch references from CI workflow.
+- Pruned unused licenses (`BSD-3-Clause`, `Unicode-DFS-2016`, empty `allow-git`)
+  from `deny.toml`.
 
 ### Changed
 
-- Code coverage raised from ~80% to ~95% (`cargo-tarpaulin`).
+- `TransportWireClient::read_response` now uses `read_line_with_retry()`
+  internally.
+- Code coverage raised from ~80% to ~92% on CI (`cargo-tarpaulin`).
 - All broken intra-doc links resolved (`cargo doc` now warning-free).
 
 ## [0.3.0] - 2026-05-25
@@ -106,6 +126,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optional secret redaction via `redact_secrets` and `scrub_secret_patterns`.
 - Comprehensive serde round-trip tests.
 
+[0.4.0]: https://github.com/ekhodzitsky/kimi-wire/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/ekhodzitsky/kimi-wire/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/ekhodzitsky/kimi-wire/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/ekhodzitsky/kimi-wire/releases/tag/v0.1.0
