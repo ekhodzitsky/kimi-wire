@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-06-02
+
+### Fixed
+
+- All `clippy::nursery` warnings resolved: `option_if_let_else`,
+  `unnecessary_struct_initialization`, `unused_map_closure`.
+- All `clippy::pedantic` warnings resolved: `uninlined_format_args`,
+  `doc_markdown`, `manual_let_else`, `empty_string` in tests.
+- CI permissions restricted to `contents: read` in `ci.yml` and `release.yml`.
+- Dead `master` branch references removed from `security-audit.yml`.
+
 ## [0.4.0] - 2026-06-02
 
 ### Added
