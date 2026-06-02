@@ -88,6 +88,25 @@ async fn test_child_process_transport_read_line_returns_none_after_child_exit() 
 }
 
 #[tokio::test]
+async fn test_child_process_transport_spawn_with_args() {
+    let (dir, bin) = make_mock_binary().await;
+
+    let mut transport = ChildProcessTransport::spawn(
+        bin.to_str().unwrap(),
+        Some(dir.path()),
+        Some("test-session"),
+        Some("test-model"),
+    )
+    .await
+    .unwrap();
+
+    let req = r#"{"jsonrpc":"2.0","id":"1","method":"prompt","params":{}}"#;
+    transport.write_line(req).await.unwrap();
+    let line = transport.read_line().await.unwrap();
+    assert!(line.is_some());
+}
+
+#[tokio::test]
 async fn test_child_process_transport_spawn_fails_for_missing_binary() {
     let err = ChildProcessTransport::spawn("/nonexistent/binary", None, None, None)
         .await

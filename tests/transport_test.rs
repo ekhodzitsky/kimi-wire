@@ -488,6 +488,141 @@ async fn test_pending_messages_buffer_cap_returns_internal_error() {
 }
 
 // ============================================================================
+// MockTransport for retry / error-path coverage
+// ============================================================================
+
+struct MockTransport {
+    responses: Vec<Result<Option<String>, WireError>>,
+}
+
+impl kimi_wire::transport::Transport for MockTransport {
+    async fn read_line(&mut self) -> Result<Option<String>, WireError> {
+        if self.responses.is_empty() {
+            Ok(None)
+        } else {
+            self.responses.remove(0)
+        }
+    }
+
+    async fn write_line(&mut self, _line: &str) -> Result<(), WireError> {
+        Ok(())
+    }
+}
+
+#[test]
+fn test_transport_wire_client_debug() {
+    let transport = MockTransport { responses: vec![] };
+    let client = TransportWireClient::new(transport);
+    let s = format!("{:?}", client);
+    assert!(s.contains("TransportWireClient"));
+}
+
+#[test]
+fn test_with_max_io_retries() {
+    let t1 = MockTransport { responses: vec![] };
+    let _ = TransportWireClient::new(t1).with_max_io_retries(3);
+    let t2 = MockTransport { responses: vec![] };
+    let _ = TransportWireClient::new(t2).with_max_io_retries(10);
+}
+
+#[tokio::test]
+async fn test_read_response_retries_on_transient_io_error() {
+    let transport = MockTransport {
+        responses: vec![
+            Err(WireError::Io("transient".to_string())),
+            Err(WireError::Io("transient2".to_string())),
+            Ok(Some(
+                r#"{"jsonrpc":"2.0","id":"req-1","result":{"status":"finished"}}"#.to_string(),
+            )),
+        ],
+    };
+    let mut client = TransportWireClient::new(transport).with_max_io_retries(3);
+    let result: PromptResult = client.read_response("req-1").await.unwrap();
+    assert_eq!(result.status, PromptStatus::Finished);
+}
+
+#[tokio::test]
+async fn test_read_response_no_retry_on_non_transient_error() {
+    let transport = MockTransport {
+        responses: vec![Err(WireError::StreamClosed)],
+    };
+    let mut client = TransportWireClient::new(transport).with_max_io_retries(3);
+    let err = client
+        .read_response::<PromptResult>("req-1")
+        .await
+        .unwrap_err();
+    assert!(matches!(err, WireError::StreamClosed));
+}
+
+#[tokio::test]
+async fn test_read_response_stream_closed() {
+    let transport = MockTransport { responses: vec![] };
+    let mut client = TransportWireClient::new(transport);
+    let err = client
+        .read_response::<PromptResult>("any")
+        .await
+        .unwrap_err();
+    assert!(matches!(err, WireError::StreamClosed));
+}
+
+#[tokio::test]
+async fn test_read_raw_message_timeout_success() {
+    let (transport, mut other) = ChannelTransport::pair();
+    let mut client = TransportWireClient::new(transport);
+
+    let msg = RawWireMessage {
+        jsonrpc: JsonRpcVersion::V2,
+        id: Some("1".to_string()),
+        method: None,
+        params: None,
+        result: Some(serde_json::json!(42)),
+        error: None,
+    };
+    other
+        .write_line(&serde_json::to_string(&msg).unwrap())
+        .await
+        .unwrap();
+
+    let read = client
+        .read_raw_message_timeout(Duration::from_secs(5))
+        .await
+        .unwrap();
+    assert_eq!(read.id, Some("1".to_string()));
+}
+
+#[tokio::test]
+async fn test_read_raw_message_drains_pending_from_response() {
+    let (transport, mut other) = ChannelTransport::pair();
+    let mut client =
+        TransportWireClient::new(transport).with_default_timeout(Duration::from_millis(50));
+
+    // Send an out-of-order message so read_response buffers it in pending.
+    let msg = RawWireMessage {
+        jsonrpc: JsonRpcVersion::V2,
+        id: Some("pending-id".to_string()),
+        method: None,
+        params: None,
+        result: Some(serde_json::json!({"status": "finished"})),
+        error: None,
+    };
+    other
+        .write_line(&serde_json::to_string(&msg).unwrap())
+        .await
+        .unwrap();
+
+    // read_response will read the message, see id mismatch, push to pending,
+    // then time out waiting for "wanted".
+    let _ = client
+        .read_response::<PromptResult>("wanted")
+        .await
+        .unwrap_err();
+
+    // read_raw_message should drain pending first.
+    let raw = client.read_raw_message().await.unwrap();
+    assert_eq!(raw.id, Some("pending-id".to_string()));
+}
+
+// ============================================================================
 // MAX_WIRE_LINE_LENGTH
 // ============================================================================
 
