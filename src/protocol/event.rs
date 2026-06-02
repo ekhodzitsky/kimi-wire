@@ -243,10 +243,10 @@ pub(crate) enum FlatEvent {
 impl From<Event> for FlatEvent {
     fn from(ev: Event) -> Self {
         match ev {
-            Event::TurnBegin { user_input } => FlatEvent::TurnBegin { user_input },
-            Event::TurnEnd => FlatEvent::TurnEnd,
-            Event::StepBegin { n } => FlatEvent::StepBegin { n },
-            Event::StepInterrupted => FlatEvent::StepInterrupted,
+            Event::TurnBegin { user_input } => Self::TurnBegin { user_input },
+            Event::TurnEnd => Self::TurnEnd,
+            Event::StepBegin { n } => Self::StepBegin { n },
+            Event::StepInterrupted => Self::StepInterrupted,
             Event::StepRetry {
                 n,
                 next_attempt,
@@ -254,7 +254,7 @@ impl From<Event> for FlatEvent {
                 wait_s,
                 error_type,
                 status_code,
-            } => FlatEvent::StepRetry {
+            } => Self::StepRetry {
                 n,
                 next_attempt,
                 max_attempts,
@@ -262,24 +262,24 @@ impl From<Event> for FlatEvent {
                 error_type,
                 status_code,
             },
-            Event::CompactionBegin => FlatEvent::CompactionBegin,
-            Event::CompactionEnd => FlatEvent::CompactionEnd,
-            Event::StatusUpdate(s) => FlatEvent::StatusUpdate(s),
-            Event::ContentPart(c) => FlatEvent::ContentPart(c),
+            Event::CompactionBegin => Self::CompactionBegin,
+            Event::CompactionEnd => Self::CompactionEnd,
+            Event::StatusUpdate(s) => Self::StatusUpdate(s),
+            Event::ContentPart(c) => Self::ContentPart(c),
             Event::ToolCall {
                 id,
                 function,
                 extras,
-            } => FlatEvent::ToolCall {
+            } => Self::ToolCall {
                 id,
                 function,
                 extras,
             },
-            Event::ToolCallPart { arguments_part } => FlatEvent::ToolCallPart { arguments_part },
+            Event::ToolCallPart { arguments_part } => Self::ToolCallPart { arguments_part },
             Event::ToolResult {
                 tool_call_id,
                 return_value,
-            } => FlatEvent::ToolResult {
+            } => Self::ToolResult {
                 tool_call_id,
                 return_value,
             },
@@ -287,7 +287,7 @@ impl From<Event> for FlatEvent {
                 request_id,
                 response,
                 feedback,
-            } => FlatEvent::ApprovalResponse {
+            } => Self::ApprovalResponse {
                 request_id,
                 response,
                 feedback,
@@ -297,31 +297,29 @@ impl From<Event> for FlatEvent {
                 agent_id,
                 subagent_type,
                 event,
-            } => FlatEvent::SubagentEvent {
+            } => Self::SubagentEvent {
                 parent_tool_call_id,
                 agent_id,
                 subagent_type,
                 event,
             },
-            Event::SteerInput { user_input } => FlatEvent::SteerInput { user_input },
-            Event::BtwBegin { id, question } => FlatEvent::BtwBegin { id, question },
+            Event::SteerInput { user_input } => Self::SteerInput { user_input },
+            Event::BtwBegin { id, question } => Self::BtwBegin { id, question },
             Event::BtwEnd {
                 id,
                 response,
                 error,
-            } => FlatEvent::BtwEnd {
+            } => Self::BtwEnd {
                 id,
                 response,
                 error,
             },
-            Event::PlanDisplay { content, file_path } => {
-                FlatEvent::PlanDisplay { content, file_path }
-            }
+            Event::PlanDisplay { content, file_path } => Self::PlanDisplay { content, file_path },
             Event::HookTriggered {
                 event,
                 target,
                 hook_count,
-            } => FlatEvent::HookTriggered {
+            } => Self::HookTriggered {
                 event,
                 target,
                 hook_count,
@@ -332,7 +330,7 @@ impl From<Event> for FlatEvent {
                 action,
                 reason,
                 duration_ms,
-            } => FlatEvent::HookResolved {
+            } => Self::HookResolved {
                 event,
                 target,
                 action,
@@ -350,26 +348,26 @@ impl Event {
     #[must_use]
     pub const fn type_name(&self) -> &'static str {
         match self {
-            Event::TurnBegin { .. } => "TurnBegin",
-            Event::TurnEnd => "TurnEnd",
-            Event::StepBegin { .. } => "StepBegin",
-            Event::StepInterrupted => "StepInterrupted",
-            Event::StepRetry { .. } => "StepRetry",
-            Event::CompactionBegin => "CompactionBegin",
-            Event::CompactionEnd => "CompactionEnd",
-            Event::StatusUpdate(_) => "StatusUpdate",
-            Event::ContentPart(_) => "ContentPart",
-            Event::ToolCall { .. } => "ToolCall",
-            Event::ToolCallPart { .. } => "ToolCallPart",
-            Event::ToolResult { .. } => "ToolResult",
-            Event::ApprovalResponse { .. } => "ApprovalResponse",
-            Event::SubagentEvent { .. } => "SubagentEvent",
-            Event::SteerInput { .. } => "SteerInput",
-            Event::BtwBegin { .. } => "BtwBegin",
-            Event::BtwEnd { .. } => "BtwEnd",
-            Event::PlanDisplay { .. } => "PlanDisplay",
-            Event::HookTriggered { .. } => "HookTriggered",
-            Event::HookResolved { .. } => "HookResolved",
+            Self::TurnBegin { .. } => "TurnBegin",
+            Self::TurnEnd => "TurnEnd",
+            Self::StepBegin { .. } => "StepBegin",
+            Self::StepInterrupted => "StepInterrupted",
+            Self::StepRetry { .. } => "StepRetry",
+            Self::CompactionBegin => "CompactionBegin",
+            Self::CompactionEnd => "CompactionEnd",
+            Self::StatusUpdate(_) => "StatusUpdate",
+            Self::ContentPart(_) => "ContentPart",
+            Self::ToolCall { .. } => "ToolCall",
+            Self::ToolCallPart { .. } => "ToolCallPart",
+            Self::ToolResult { .. } => "ToolResult",
+            Self::ApprovalResponse { .. } => "ApprovalResponse",
+            Self::SubagentEvent { .. } => "SubagentEvent",
+            Self::SteerInput { .. } => "SteerInput",
+            Self::BtwBegin { .. } => "BtwBegin",
+            Self::BtwEnd { .. } => "BtwEnd",
+            Self::PlanDisplay { .. } => "PlanDisplay",
+            Self::HookTriggered { .. } => "HookTriggered",
+            Self::HookResolved { .. } => "HookResolved",
         }
     }
 }
@@ -377,10 +375,10 @@ impl Event {
 impl From<FlatEvent> for Event {
     fn from(ev: FlatEvent) -> Self {
         match ev {
-            FlatEvent::TurnBegin { user_input } => Event::TurnBegin { user_input },
-            FlatEvent::TurnEnd => Event::TurnEnd,
-            FlatEvent::StepBegin { n } => Event::StepBegin { n },
-            FlatEvent::StepInterrupted => Event::StepInterrupted,
+            FlatEvent::TurnBegin { user_input } => Self::TurnBegin { user_input },
+            FlatEvent::TurnEnd => Self::TurnEnd,
+            FlatEvent::StepBegin { n } => Self::StepBegin { n },
+            FlatEvent::StepInterrupted => Self::StepInterrupted,
             FlatEvent::StepRetry {
                 n,
                 next_attempt,
@@ -388,7 +386,7 @@ impl From<FlatEvent> for Event {
                 wait_s,
                 error_type,
                 status_code,
-            } => Event::StepRetry {
+            } => Self::StepRetry {
                 n,
                 next_attempt,
                 max_attempts,
@@ -396,24 +394,24 @@ impl From<FlatEvent> for Event {
                 error_type,
                 status_code,
             },
-            FlatEvent::CompactionBegin => Event::CompactionBegin,
-            FlatEvent::CompactionEnd => Event::CompactionEnd,
-            FlatEvent::StatusUpdate(s) => Event::StatusUpdate(s),
-            FlatEvent::ContentPart(c) => Event::ContentPart(c),
+            FlatEvent::CompactionBegin => Self::CompactionBegin,
+            FlatEvent::CompactionEnd => Self::CompactionEnd,
+            FlatEvent::StatusUpdate(s) => Self::StatusUpdate(s),
+            FlatEvent::ContentPart(c) => Self::ContentPart(c),
             FlatEvent::ToolCall {
                 id,
                 function,
                 extras,
-            } => Event::ToolCall {
+            } => Self::ToolCall {
                 id,
                 function,
                 extras,
             },
-            FlatEvent::ToolCallPart { arguments_part } => Event::ToolCallPart { arguments_part },
+            FlatEvent::ToolCallPart { arguments_part } => Self::ToolCallPart { arguments_part },
             FlatEvent::ToolResult {
                 tool_call_id,
                 return_value,
-            } => Event::ToolResult {
+            } => Self::ToolResult {
                 tool_call_id,
                 return_value,
             },
@@ -421,7 +419,7 @@ impl From<FlatEvent> for Event {
                 request_id,
                 response,
                 feedback,
-            } => Event::ApprovalResponse {
+            } => Self::ApprovalResponse {
                 request_id,
                 response,
                 feedback,
@@ -431,31 +429,31 @@ impl From<FlatEvent> for Event {
                 agent_id,
                 subagent_type,
                 event,
-            } => Event::SubagentEvent {
+            } => Self::SubagentEvent {
                 parent_tool_call_id,
                 agent_id,
                 subagent_type,
                 event,
             },
-            FlatEvent::SteerInput { user_input } => Event::SteerInput { user_input },
-            FlatEvent::BtwBegin { id, question } => Event::BtwBegin { id, question },
+            FlatEvent::SteerInput { user_input } => Self::SteerInput { user_input },
+            FlatEvent::BtwBegin { id, question } => Self::BtwBegin { id, question },
             FlatEvent::BtwEnd {
                 id,
                 response,
                 error,
-            } => Event::BtwEnd {
+            } => Self::BtwEnd {
                 id,
                 response,
                 error,
             },
             FlatEvent::PlanDisplay { content, file_path } => {
-                Event::PlanDisplay { content, file_path }
+                Self::PlanDisplay { content, file_path }
             }
             FlatEvent::HookTriggered {
                 event,
                 target,
                 hook_count,
-            } => Event::HookTriggered {
+            } => Self::HookTriggered {
                 event,
                 target,
                 hook_count,
@@ -466,7 +464,7 @@ impl From<FlatEvent> for Event {
                 action,
                 reason,
                 duration_ms,
-            } => Event::HookResolved {
+            } => Self::HookResolved {
                 event,
                 target,
                 action,
@@ -493,7 +491,7 @@ impl Serialize for Event {
         match self {
             // ContentPart carries its own "type" field (e.g. "text", "image_url").
             // We must not strip it, otherwise deserialization fails.
-            Event::ContentPart(part) => {
+            Self::ContentPart(part) => {
                 let payload = serde_json::to_value(part).map_err(serde::ser::Error::custom)?;
                 EventEnvelope {
                     type_name: "ContentPart".to_string(),
@@ -503,7 +501,7 @@ impl Serialize for Event {
             }
             // ToolCall payload carries an inner `type: "function"` discriminator
             // that must be preserved in the payload, separate from the envelope type.
-            Event::ToolCall {
+            Self::ToolCall {
                 id,
                 function,
                 extras,
@@ -556,7 +554,7 @@ impl<'de> Deserialize<'de> for Event {
         if envelope.type_name.as_str() == "ContentPart" {
             let part: ContentPart =
                 serde_json::from_value(envelope.payload).map_err(serde::de::Error::custom)?;
-            Ok(Event::ContentPart(part))
+            Ok(Self::ContentPart(part))
         } else {
             let mut value = envelope.payload;
             if let Some(obj) = value.as_object_mut() {
@@ -567,7 +565,7 @@ impl<'de> Deserialize<'de> for Event {
             }
             let flat: FlatEvent =
                 serde_json::from_value(value).map_err(serde::de::Error::custom)?;
-            Ok(Event::from(flat))
+            Ok(Self::from(flat))
         }
     }
 }

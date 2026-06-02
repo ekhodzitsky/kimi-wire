@@ -75,16 +75,16 @@ pub enum WireError {
 
 impl From<std::io::Error> for WireError {
     fn from(err: std::io::Error) -> Self {
-        WireError::Io(err.to_string())
+        Self::Io(err.to_string())
     }
 }
 
 impl From<serde_json::Error> for WireError {
     fn from(err: serde_json::Error) -> Self {
         if err.is_io() {
-            WireError::Io(err.to_string())
+            Self::Io(err.to_string())
         } else {
-            WireError::JsonParse(err.to_string())
+            Self::JsonParse(err.to_string())
         }
     }
 }

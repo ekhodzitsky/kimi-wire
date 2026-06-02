@@ -37,7 +37,7 @@ pub const MAX_WIRE_LINE_LENGTH: usize = 16 * 1024 * 1024;
 pub const MAX_PENDING_MESSAGES: usize = 1024;
 
 /// Returns `true` for errors where a retry might succeed.
-fn is_transient_error(err: &WireError) -> bool {
+const fn is_transient_error(err: &WireError) -> bool {
     matches!(err, WireError::Io(_) | WireError::Timeout(_))
 }
 
@@ -174,10 +174,9 @@ impl<T: Transport> WireClient for TransportWireClient<T> {
         &mut self,
         timeout: Duration,
     ) -> Result<RawWireMessage, WireError> {
-        match tokio::time::timeout(timeout, self.read_raw_message()).await {
-            Ok(msg) => msg,
-            Err(_) => Err(WireError::Timeout(timeout)),
-        }
+        tokio::time::timeout(timeout, self.read_raw_message())
+            .await
+            .map_or(Err(WireError::Timeout(timeout)), |msg| msg)
     }
 
     async fn read_response<Res: DeserializeOwned + Send>(

@@ -116,10 +116,10 @@ async fn test_child_process_transport_spawn_fails_for_missing_binary() {
 }
 
 fn graceful_mock_kimi_script() -> String {
-    r#"#!/bin/bash
+    r"#!/bin/bash
 # Mock kimi binary that exits when stdin closes
 exec cat >/dev/null
-"#
+"
     .to_string()
 }
 
@@ -145,19 +145,18 @@ async fn test_child_process_transport_graceful_shutdown_exits_within_grace_perio
     // jitter on loaded runners).
     assert!(
         elapsed < std::time::Duration::from_secs(4),
-        "graceful shutdown took too long: {:?}",
-        elapsed
+        "graceful shutdown took too long: {elapsed:?}"
     );
 }
 
 fn unresponsive_mock_script() -> String {
-    r#"#!/bin/bash
+    r"#!/bin/bash
 # Mock kimi binary that ignores SIGTERM and loops forever
 trap '' TERM
 while true; do
     sleep 1
 done
-"#
+"
     .to_string()
 }
 
@@ -181,12 +180,10 @@ async fn test_child_process_transport_graceful_shutdown_kills_unresponsive_child
     // Should wait the 3-second grace period then kill.
     assert!(
         elapsed >= std::time::Duration::from_secs(2),
-        "shutdown should have waited grace period, elapsed: {:?}",
-        elapsed
+        "shutdown should have waited grace period, elapsed: {elapsed:?}"
     );
     assert!(
         elapsed < std::time::Duration::from_secs(5),
-        "shutdown took too long, elapsed: {:?}",
-        elapsed
+        "shutdown took too long, elapsed: {elapsed:?}"
     );
 }

@@ -255,21 +255,20 @@ impl WireClient for InMemoryWireClient {
         if let Some(msg) = msg {
             return Ok(msg);
         }
-        let msg = self.incoming.lock().await.pop_front();
-        match msg {
-            Some(msg) => Ok(msg),
-            None => Err(WireError::StreamClosed),
-        }
+        self.incoming
+            .lock()
+            .await
+            .pop_front()
+            .map_or_else(|| Err(WireError::StreamClosed), Ok)
     }
 
     async fn read_raw_message_timeout(
         &mut self,
         timeout: Duration,
     ) -> Result<crate::protocol::RawWireMessage, WireError> {
-        match tokio::time::timeout(timeout, self.read_raw_message()).await {
-            Ok(msg) => msg,
-            Err(_) => Err(WireError::Timeout(timeout)),
-        }
+        tokio::time::timeout(timeout, self.read_raw_message())
+            .await
+            .map_or(Err(WireError::Timeout(timeout)), |msg| msg)
     }
 
     async fn read_response<T: DeserializeOwned + Send>(

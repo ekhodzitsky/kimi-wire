@@ -41,10 +41,10 @@ pub(crate) enum FlatRequest {
 impl From<Request> for FlatRequest {
     fn from(req: Request) -> Self {
         match req {
-            Request::ApprovalRequest(inner) => FlatRequest::ApprovalRequest(inner),
-            Request::ToolCallRequest(inner) => FlatRequest::ToolCallRequest(inner),
-            Request::QuestionRequest(inner) => FlatRequest::QuestionRequest(inner),
-            Request::HookRequest(inner) => FlatRequest::HookRequest(inner),
+            Request::ApprovalRequest(inner) => Self::ApprovalRequest(inner),
+            Request::ToolCallRequest(inner) => Self::ToolCallRequest(inner),
+            Request::QuestionRequest(inner) => Self::QuestionRequest(inner),
+            Request::HookRequest(inner) => Self::HookRequest(inner),
         }
     }
 }
@@ -52,10 +52,10 @@ impl From<Request> for FlatRequest {
 impl From<FlatRequest> for Request {
     fn from(req: FlatRequest) -> Self {
         match req {
-            FlatRequest::ApprovalRequest(inner) => Request::ApprovalRequest(inner),
-            FlatRequest::ToolCallRequest(inner) => Request::ToolCallRequest(inner),
-            FlatRequest::QuestionRequest(inner) => Request::QuestionRequest(inner),
-            FlatRequest::HookRequest(inner) => Request::HookRequest(inner),
+            FlatRequest::ApprovalRequest(inner) => Self::ApprovalRequest(inner),
+            FlatRequest::ToolCallRequest(inner) => Self::ToolCallRequest(inner),
+            FlatRequest::QuestionRequest(inner) => Self::QuestionRequest(inner),
+            FlatRequest::HookRequest(inner) => Self::HookRequest(inner),
         }
     }
 }
@@ -101,7 +101,7 @@ impl<'de> Deserialize<'de> for Request {
             );
         }
         let flat: FlatRequest = serde_json::from_value(value).map_err(serde::de::Error::custom)?;
-        Ok(Request::from(flat))
+        Ok(Self::from(flat))
     }
 }
 

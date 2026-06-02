@@ -16,31 +16,31 @@ pub enum UserInput {
 
 impl From<String> for UserInput {
     fn from(value: String) -> Self {
-        UserInput::Text(value)
+        Self::Text(value)
     }
 }
 
 impl From<&str> for UserInput {
     fn from(value: &str) -> Self {
-        UserInput::Text(value.to_string())
+        Self::Text(value.to_string())
     }
 }
 
 impl From<Vec<ContentPart>> for UserInput {
     fn from(value: Vec<ContentPart>) -> Self {
-        UserInput::Parts(value)
+        Self::Parts(value)
     }
 }
 
 impl From<String> for ContentPart {
     fn from(value: String) -> Self {
-        ContentPart::Text(TextPart { text: value })
+        Self::Text(TextPart { text: value })
     }
 }
 
 impl From<&str> for ContentPart {
     fn from(value: &str) -> Self {
-        ContentPart::Text(TextPart {
+        Self::Text(TextPart {
             text: value.to_string(),
         })
     }
@@ -342,18 +342,18 @@ pub enum ToolOutput {
 
 impl From<String> for ToolOutput {
     fn from(value: String) -> Self {
-        ToolOutput::Text(value)
+        Self::Text(value)
     }
 }
 
 impl From<&str> for ToolOutput {
     fn from(value: &str) -> Self {
-        ToolOutput::Text(value.to_string())
+        Self::Text(value.to_string())
     }
 }
 
 impl From<Vec<ContentPart>> for ToolOutput {
     fn from(value: Vec<ContentPart>) -> Self {
-        ToolOutput::Parts(value)
+        Self::Parts(value)
     }
 }

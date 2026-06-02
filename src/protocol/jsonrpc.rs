@@ -32,7 +32,7 @@ impl<'de> serde::Deserialize<'de> for JsonRpcVersion {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         let s = <std::borrow::Cow<'_, str>>::deserialize(deserializer)?;
         if s == "2.0" {
-            Ok(JsonRpcVersion)
+            Ok(Self)
         } else {
             Err(serde::de::Error::custom(format!(
                 "unsupported JSON-RPC version: expected \"2.0\", got {s:?}"

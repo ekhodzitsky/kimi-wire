@@ -80,10 +80,7 @@ impl EventExt for Event {
     }
 
     fn payload(&self) -> serde_json::Value {
-        match serde_json::to_value(self) {
-            Ok(v) => v,
-            Err(_) => serde_json::Value::Null,
-        }
+        serde_json::to_value(self).map_or(serde_json::Value::Null, |v| v)
     }
 }
 
@@ -104,22 +101,22 @@ pub trait RequestExt {
 impl RequestExt for Request {
     fn kind(&self) -> String {
         match self {
-            Request::ApprovalRequest(_) => "ApprovalRequest",
-            Request::ToolCallRequest(_) => "ToolCallRequest",
-            Request::QuestionRequest(_) => "QuestionRequest",
-            Request::HookRequest(_) => "HookRequest",
+            Self::ApprovalRequest(_) => "ApprovalRequest",
+            Self::ToolCallRequest(_) => "ToolCallRequest",
+            Self::QuestionRequest(_) => "QuestionRequest",
+            Self::HookRequest(_) => "HookRequest",
         }
         .to_string()
     }
 
     fn default_response(&self) -> serde_json::Value {
         match self {
-            Request::ApprovalRequest(req) => serde_json::json!({
+            Self::ApprovalRequest(req) => serde_json::json!({
                 "request_id": req.id,
                 "response": ApprovalResponseKind::ApproveForSession,
                 "feedback": "Auto-approved by non-interactive worker."
             }),
-            Request::ToolCallRequest(req) => serde_json::json!({
+            Self::ToolCallRequest(req) => serde_json::json!({
                 "tool_call_id": req.id,
                 "return_value": ToolReturnValue {
                     is_error: true,
@@ -129,7 +126,7 @@ impl RequestExt for Request {
                     extras: None,
                 }
             }),
-            Request::QuestionRequest(req) => {
+            Self::QuestionRequest(req) => {
                 let answers: Vec<serde_json::Value> = req
                     .questions
                     .iter()
@@ -145,7 +142,7 @@ impl RequestExt for Request {
                     "message": "Selected default answers because workers run non-interactively."
                 })
             }
-            Request::HookRequest(req) => serde_json::json!({
+            Self::HookRequest(req) => serde_json::json!({
                 "request_id": req.id,
                 "action": HookAction::Allow,
                 "reason": format!(
