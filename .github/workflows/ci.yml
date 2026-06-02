@@ -59,7 +59,7 @@ jobs:
         with:
           # Full history is required to diff dependencies between base and head.
           fetch-depth: 0
-      - uses: actions/dependency-review-action@v4
+      - uses: actions/dependency-review-action@v5
         with:
           # Fail on any severity (low and above).
           fail-on-severity: low
