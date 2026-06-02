@@ -27,11 +27,11 @@ pub enum WireError {
     SpawnFailed(String),
 
     /// Failed to parse a JSON message.
-    #[error("JSON parse error: {0}")]
+    #[error("json parse error: {0}")]
     JsonParse(String),
 
     /// Failed to serialize a value to JSON.
-    #[error("JSON serialization error: {0}")]
+    #[error("json serialization error: {0}")]
     JsonSerialize(String),
 
     /// The server returned a JSON-RPC error response.
@@ -43,7 +43,6 @@ pub enum WireError {
         message: String,
     },
 
-    /// Received a response with an unexpected request id.
     /// Received a response with an unexpected request id.
     #[error("unexpected response id: expected {expected}, got {got}")]
     UnexpectedResponseId {
@@ -62,7 +61,7 @@ pub enum WireError {
     UnknownMessageType(String),
 
     /// The payload was not a JSON object.
-    #[error("wire message payload must be a JSON object")]
+    #[error("wire message payload must be a json object")]
     InvalidPayloadType,
 
     /// An I/O error occurred.

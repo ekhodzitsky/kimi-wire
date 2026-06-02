@@ -36,8 +36,6 @@ version = 2
 allow = [
     "MIT",
     "Apache-2.0",
-    "BSD-3-Clause",
-    "Unicode-DFS-2016",
     "Unicode-3.0",
 ]
 
@@ -78,7 +76,7 @@ allow-registry = ["https://github.com/rust-lang/crates.io-index"]
 
 # Restrict git dependencies to the author's own GitHub namespace.
 # Any external git source must be explicitly added here after review.
-allow-git = ["https://github.com/ekhodzitsky/*"]
+allow-git = []
 
 # Warn when a dependency is pulled from an unknown registry.
 # Acts as a safety net in case allow-registry is ever misconfigured.

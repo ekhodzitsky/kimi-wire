@@ -249,10 +249,12 @@ impl WireClient for InMemoryWireClient {
     }
 
     async fn read_raw_message(&mut self) -> Result<crate::protocol::RawWireMessage, WireError> {
-        if let Some(msg) = self.pending.lock().await.pop_front() {
+        let msg = self.pending.lock().await.pop_front();
+        if let Some(msg) = msg {
             return Ok(msg);
         }
-        match self.incoming.lock().await.pop_front() {
+        let msg = self.incoming.lock().await.pop_front();
+        match msg {
             Some(msg) => Ok(msg),
             None => Err(WireError::StreamClosed),
         }
@@ -287,7 +289,8 @@ impl WireClient for InMemoryWireClient {
                     return decode_response(msg, expected_id);
                 }
 
-                match self.incoming.lock().await.pop_front() {
+                let msg = self.incoming.lock().await.pop_front();
+                match msg {
                     Some(msg) if msg.id.as_deref() == Some(expected_id) => {
                         return decode_response(msg, expected_id);
                     }

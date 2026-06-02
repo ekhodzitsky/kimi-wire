@@ -76,6 +76,17 @@ pub struct TransportWireClient<T: Transport> {
     default_timeout: Option<Duration>,
 }
 
+impl<T: Transport> std::fmt::Debug for TransportWireClient<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TransportWireClient")
+            .field("request_id_counter", &self.request_id_counter)
+            .field("handshake_done", &self.handshake_done)
+            .field("pending_messages", &self.pending_messages.len())
+            .field("default_timeout", &self.default_timeout)
+            .finish_non_exhaustive()
+    }
+}
+
 impl<T: Transport> TransportWireClient<T> {
     /// Create a new client wrapping the given transport.
     pub fn new(transport: T) -> Self {
@@ -421,6 +432,9 @@ impl Transport for ChildProcessTransport {
                 Ok(Ok(_)) => {}
                 Ok(Err(_)) => {}
                 Err(_) => {
+                    // Best-effort kill after graceful shutdown timed out.
+                    // Safe to ignore: child is already unresponsive.
+                    #[allow(unused_must_use)]
                     let _ = child.kill().await;
                 }
             }
