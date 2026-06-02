@@ -14,6 +14,38 @@ async fn test_in_memory_client_new() {
 }
 
 #[tokio::test]
+async fn test_in_memory_client_with_default_timeout() {
+    let client = InMemoryWireClient::new().with_default_timeout(Duration::from_millis(50));
+    // Ensure builder method compiles and returns the client.
+    assert!(!client.is_handshake_done());
+}
+
+#[cfg(feature = "process")]
+#[tokio::test]
+async fn test_read_response_timeout_via_transport() {
+    use kimi_wire::transport::{ChannelTransport, Transport, TransportWireClient};
+    let (transport, mut other) = ChannelTransport::pair();
+    let mut client =
+        TransportWireClient::new(transport).with_default_timeout(Duration::from_millis(10));
+
+    let msg = RawWireMessage {
+        jsonrpc: JsonRpcVersion::V2,
+        id: Some("other".to_string()),
+        method: None,
+        params: None,
+        result: Some(serde_json::json!({"status": "ok"})),
+        error: None,
+    };
+    other
+        .write_line(&serde_json::to_string(&msg).unwrap())
+        .await
+        .unwrap();
+
+    let result = client.read_response::<PromptResult>("wanted").await;
+    assert!(matches!(result, Err(WireError::Timeout(_))));
+}
+
+#[tokio::test]
 async fn test_next_id_increments() {
     let mut client = InMemoryWireClient::new();
     assert_eq!(client.next_id(), "req-1");
