@@ -43,6 +43,7 @@ pub mod client;
 /// Extension traits for [`WireClient`].
 pub mod client_ext;
 /// Ready-made dispatch loop for wire conversations.
+#[cfg(feature = "process")]
 pub mod dispatch;
 /// Error types for wire protocol failures.
 pub mod error;
@@ -57,6 +58,7 @@ pub mod transport;
 pub use client::{InMemoryWireClient, WireClient};
 pub use client_ext::{EventExt, RequestExt, WireClientExt};
 pub use error::WireError;
+#[cfg(feature = "redact")]
 pub use protocol::redact::redact_secrets;
 
 /// The latest wire protocol version supported by this crate.

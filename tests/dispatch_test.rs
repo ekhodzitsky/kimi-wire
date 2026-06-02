@@ -1,4 +1,5 @@
 //! Tests for `kimi_wire::dispatch::process_messages`.
+#![cfg(feature = "process")]
 
 use kimi_wire::{
     client::InMemoryWireClient,
