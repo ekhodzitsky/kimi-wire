@@ -347,7 +347,8 @@ impl Event {
     /// Return the wire type name for this event.
     ///
     /// Matches the `type` field in the wire envelope.
-    pub fn type_name(&self) -> &'static str {
+    #[must_use]
+    pub const fn type_name(&self) -> &'static str {
         match self {
             Event::TurnBegin { .. } => "TurnBegin",
             Event::TurnEnd => "TurnEnd",
@@ -578,7 +579,7 @@ impl<'de> Deserialize<'de> for Event {
 ///
 /// This is a generic `{type, payload}` envelope rather than a strongly-typed
 /// [`Event`] because subagent events may be any wire message type.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct SubagentEventPayload {
     /// The wire type name of the subagent event.
     #[serde(rename = "type")]
@@ -611,7 +612,7 @@ pub struct StatusUpdate {
 }
 
 /// Token usage breakdown.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct TokenUsage {
     /// Input tokens excluding `input_cache_read` and `input_cache_creation`.
     pub input_other: u64,
@@ -624,7 +625,7 @@ pub struct TokenUsage {
 }
 
 /// Function name and arguments for a tool call.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ToolCallFunction {
     /// Function name.
     pub name: String,

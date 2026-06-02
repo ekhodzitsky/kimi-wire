@@ -7,7 +7,7 @@ use super::content::UserInput;
 // ============================================================================
 
 /// Initialize request parameters.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
 pub struct InitializeParams {
     /// Protocol version string (e.g. "1.10").
     pub protocol_version: String,
@@ -38,24 +38,28 @@ impl InitializeParams {
     }
 
     /// Set client info.
+    #[must_use]
     pub fn with_client(mut self, client: ClientInfo) -> Self {
         self.client = Some(client);
         self
     }
 
     /// Set external tools.
+    #[must_use]
     pub fn with_external_tools(mut self, tools: Vec<ExternalTool>) -> Self {
         self.external_tools = Some(tools);
         self
     }
 
     /// Set client capabilities.
-    pub fn with_capabilities(mut self, caps: ClientCapabilities) -> Self {
+    #[must_use]
+    pub const fn with_capabilities(mut self, caps: ClientCapabilities) -> Self {
         self.capabilities = Some(caps);
         self
     }
 
     /// Set hook subscriptions.
+    #[must_use]
     pub fn with_hooks(mut self, hooks: Vec<WireHookSubscription>) -> Self {
         self.hooks = Some(hooks);
         self
@@ -63,7 +67,7 @@ impl InitializeParams {
 }
 
 /// Client identification info.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ClientInfo {
     /// Client name.
     pub name: String,
@@ -73,7 +77,7 @@ pub struct ClientInfo {
 }
 
 /// Capabilities advertised by the client.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
 pub struct ClientCapabilities {
     /// Whether the client supports interactive questions.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -84,7 +88,7 @@ pub struct ClientCapabilities {
 }
 
 /// A hook subscription.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct WireHookSubscription {
     /// Subscription id.
     pub id: String,
@@ -99,7 +103,7 @@ pub struct WireHookSubscription {
 }
 
 /// An external tool definition.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ExternalTool {
     /// Tool name.
     pub name: String,
@@ -110,7 +114,7 @@ pub struct ExternalTool {
 }
 
 /// Initialize response result.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct InitializeResult {
     /// Protocol version supported by the server.
     pub protocol_version: String,
@@ -130,7 +134,7 @@ pub struct InitializeResult {
 }
 
 /// Server identification info.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ServerInfo {
     /// Server name.
     pub name: String,
@@ -139,7 +143,7 @@ pub struct ServerInfo {
 }
 
 /// Information about a slash command.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct SlashCommandInfo {
     /// Command name.
     pub name: String,
@@ -150,7 +154,7 @@ pub struct SlashCommandInfo {
 }
 
 /// Result of registering external tools.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ExternalToolsResult {
     /// Accepted tool names.
     pub accepted: Vec<String>,
@@ -159,7 +163,7 @@ pub struct ExternalToolsResult {
 }
 
 /// A rejected external tool.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct RejectedExternalTool {
     /// Tool name.
     pub name: String,
@@ -168,7 +172,7 @@ pub struct RejectedExternalTool {
 }
 
 /// Capabilities advertised by the server.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
 pub struct ServerCapabilities {
     /// Whether the server supports interactive questions.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -176,7 +180,7 @@ pub struct ServerCapabilities {
 }
 
 /// Hook information returned by the server.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct HooksInfo {
     /// Supported hook event names.
     pub supported_events: Vec<String>,
@@ -196,7 +200,7 @@ pub struct PromptParams {
 }
 
 /// Prompt response result.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct PromptResult {
     /// Turn completion status.
     pub status: PromptStatus,
@@ -240,11 +244,11 @@ pub enum PromptStatus {
 // ============================================================================
 
 /// Replay request parameters (empty).
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
 pub struct ReplayParams {}
 
 /// Replay response result.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ReplayResult {
     /// Replay completion status.
     pub status: ReplayStatus,
@@ -277,7 +281,7 @@ pub struct SteerParams {
 }
 
 /// Steer response result.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct SteerResult {
     /// Steering status.
     pub status: SteerStatus,
@@ -297,14 +301,14 @@ pub enum SteerStatus {
 // ============================================================================
 
 /// SetPlanMode request parameters.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct SetPlanModeParams {
     /// Whether to enable plan mode.
     pub enabled: bool,
 }
 
 /// SetPlanMode response result.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct SetPlanModeResult {
     /// Operation status.
     pub status: SetPlanModeStatus,
@@ -326,9 +330,9 @@ pub enum SetPlanModeStatus {
 // ============================================================================
 
 /// Cancel request parameters (empty).
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
 pub struct CancelParams {}
 
 /// Cancel response result (empty).
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
 pub struct CancelResult {}

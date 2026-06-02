@@ -71,14 +71,14 @@ pub enum ContentPart {
 }
 
 /// Text content part.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct TextPart {
     /// The text content.
     pub text: String,
 }
 
 /// Thinking content part.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ThinkPart {
     /// The thinking / reasoning text.
     pub think: String,
@@ -88,28 +88,28 @@ pub struct ThinkPart {
 }
 
 /// Image URL content part wrapper.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ImageUrlPart {
     /// Image media URL.
     pub image_url: MediaUrl,
 }
 
 /// Audio URL content part wrapper.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct AudioUrlPart {
     /// Audio media URL.
     pub audio_url: MediaUrl,
 }
 
 /// Video URL content part wrapper.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct VideoUrlPart {
     /// Video media URL.
     pub video_url: MediaUrl,
 }
 
 /// A media URL with an optional ID.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct MediaUrl {
     /// URL or data URI (e.g. `data:image/png;base64,...`).
     pub url: String,
@@ -126,7 +126,7 @@ pub struct MediaUrl {
 ///
 /// This struct-based design matches the official Go SDK and avoids tag
 /// conflicts when handling unknown block types.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct DisplayBlock {
     /// Block type discriminator.
     #[serde(rename = "type")]
@@ -180,7 +180,7 @@ pub enum DisplayBlockType {
 }
 
 /// A single item in a todo display block.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct TodoDisplayItem {
     /// Item title.
     pub title: String,
@@ -243,7 +243,8 @@ impl DisplayBlock {
     }
 
     /// Create a todo list display block.
-    pub fn todo(items: Vec<TodoDisplayItem>) -> Self {
+    #[must_use]
+    pub const fn todo(items: Vec<TodoDisplayItem>) -> Self {
         Self {
             block_type: DisplayBlockType::Todo,
             text: None,
@@ -308,18 +309,21 @@ impl ToolReturnValue {
     }
 
     /// Mark this return value as an error.
-    pub fn with_error(mut self) -> Self {
+    #[must_use]
+    pub const fn with_error(mut self) -> Self {
         self.is_error = true;
         self
     }
 
     /// Set the tool output.
+    #[must_use]
     pub fn with_output(mut self, output: impl Into<ToolOutput>) -> Self {
         self.output = output.into();
         self
     }
 
     /// Add a display block.
+    #[must_use]
     pub fn with_display(mut self, block: DisplayBlock) -> Self {
         self.display.push(block);
         self

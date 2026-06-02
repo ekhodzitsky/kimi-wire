@@ -106,7 +106,7 @@ impl<'de> Deserialize<'de> for Request {
 }
 
 /// Approval request sent by the agent.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ApprovalRequest {
     /// Request id.
     pub id: String,
@@ -150,7 +150,7 @@ pub enum SourceKind {
 }
 
 /// Tool call request sent by the agent.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ToolCallRequest {
     /// Request id.
     pub id: String,
@@ -162,7 +162,7 @@ pub struct ToolCallRequest {
 }
 
 /// Question request sent by the agent.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct QuestionRequest {
     /// Request id.
     pub id: String,
@@ -173,7 +173,7 @@ pub struct QuestionRequest {
 }
 
 /// A single question item.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct QuestionItem {
     /// Question text.
     pub question: String,
@@ -188,7 +188,7 @@ pub struct QuestionItem {
 }
 
 /// An option for a question.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct QuestionOption {
     /// Option label.
     pub label: String,
@@ -198,7 +198,7 @@ pub struct QuestionOption {
 }
 
 /// Hook request sent by the agent.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct HookRequest {
     /// Request id.
     pub id: String,
@@ -217,7 +217,7 @@ pub struct HookRequest {
 // ============================================================================
 
 /// Response to an [`ApprovalRequest`].
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ApprovalResponse {
     /// Id of the approval request.
     pub request_id: String,
@@ -240,7 +240,7 @@ pub struct ToolCallResponse {
 }
 
 /// Response to a [`QuestionRequest`].
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct QuestionResponse {
     /// Id of the question request.
     pub request_id: String,
@@ -250,7 +250,7 @@ pub struct QuestionResponse {
 }
 
 /// Response to a [`HookRequest`].
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct HookResponse {
     /// Id of the hook request.
     pub request_id: String,

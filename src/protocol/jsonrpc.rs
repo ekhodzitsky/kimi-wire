@@ -16,7 +16,8 @@ impl JsonRpcVersion {
     pub const V2: Self = Self;
 
     /// Wire representation as a `&'static str` (`"2.0"`).
-    pub fn as_str(&self) -> &'static str {
+    #[must_use]
+    pub const fn as_str(&self) -> &'static str {
         "2.0"
     }
 }
@@ -41,7 +42,7 @@ impl<'de> serde::Deserialize<'de> for JsonRpcVersion {
 }
 
 /// A JSON-RPC 2.0 request.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JsonRpcRequest<Params> {
     /// JSON-RPC version.
     pub jsonrpc: JsonRpcVersion,
@@ -54,7 +55,7 @@ pub struct JsonRpcRequest<Params> {
 }
 
 /// A JSON-RPC 2.0 notification (no id).
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JsonRpcNotification<Params> {
     /// JSON-RPC version.
     pub jsonrpc: JsonRpcVersion,
@@ -65,7 +66,7 @@ pub struct JsonRpcNotification<Params> {
 }
 
 /// A successful JSON-RPC 2.0 response.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JsonRpcSuccessResponse<Result> {
     /// JSON-RPC version.
     pub jsonrpc: JsonRpcVersion,
@@ -76,7 +77,7 @@ pub struct JsonRpcSuccessResponse<Result> {
 }
 
 /// An error JSON-RPC 2.0 response.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JsonRpcErrorResponse {
     /// JSON-RPC version.
     pub jsonrpc: JsonRpcVersion,
@@ -87,7 +88,7 @@ pub struct JsonRpcErrorResponse {
 }
 
 /// JSON-RPC error object.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JsonRpcError {
     /// Error code.
     pub code: i32,
@@ -105,7 +106,7 @@ pub const METHOD_NOT_FOUND: i32 = -32601;
 ///
 /// All fields are optional so that any valid JSON-RPC line can be parsed
 /// without knowing the concrete schema upfront.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct RawWireMessage {
     /// JSON-RPC version.
     pub jsonrpc: JsonRpcVersion,

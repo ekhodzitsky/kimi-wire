@@ -7,7 +7,7 @@
 
 use std::future::Future;
 
-use tracing::warn;
+use tracing::{debug, info, warn};
 
 use crate::client::WireClient;
 use crate::error::WireError;
@@ -56,6 +56,7 @@ where
     F: FnMut(WireMessage) -> Fut,
     Fut: Future<Output = Result<Option<WireResponse>, WireError>>,
 {
+    info!("starting process_messages loop");
     loop {
         let raw = match client.read_raw_message().await {
             Ok(msg) => msg,
@@ -66,7 +67,10 @@ where
         };
 
         let msg = match parse_wire_message(raw) {
-            Ok(msg) => msg,
+            Ok(msg) => {
+                debug!("parsed wire message");
+                msg
+            }
             Err(e) => {
                 warn!(error = %e, "Failed to parse wire message, skipping");
                 continue;
@@ -77,5 +81,6 @@ where
             client.send_response(&response.id, &response.result).await?;
         }
     }
+    info!("process_messages loop exited");
     Ok(())
 }

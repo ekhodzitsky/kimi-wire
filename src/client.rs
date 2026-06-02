@@ -204,6 +204,7 @@ impl Default for InMemoryWireClient {
 
 impl InMemoryWireClient {
     /// Create a new in-memory client.
+    #[must_use]
     pub fn new() -> Self {
         Self {
             incoming: Mutex::new(VecDeque::new()),
@@ -217,7 +218,8 @@ impl InMemoryWireClient {
 
     /// Set a default timeout applied to every `read_response` call.
     /// Without this, `read_response` waits indefinitely for a matching id.
-    pub fn with_default_timeout(mut self, timeout: Duration) -> Self {
+    #[must_use]
+    pub const fn with_default_timeout(mut self, timeout: Duration) -> Self {
         self.default_timeout = Some(timeout);
         self
     }

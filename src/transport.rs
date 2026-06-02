@@ -36,6 +36,11 @@ pub const MAX_WIRE_LINE_LENGTH: usize = 16 * 1024 * 1024;
 /// `pending_messages` to allocate until OOM.
 pub const MAX_PENDING_MESSAGES: usize = 1024;
 
+/// Returns `true` for errors where a retry might succeed.
+fn is_transient_error(err: &WireError) -> bool {
+    matches!(err, WireError::Io(_) | WireError::Timeout(_))
+}
+
 /// Async transport for reading and writing newline-delimited JSON.
 pub trait Transport: Send {
     /// Read the next line from the transport.
@@ -74,6 +79,7 @@ pub struct TransportWireClient<T: Transport> {
     handshake_done: bool,
     pending_messages: VecDeque<RawWireMessage>,
     default_timeout: Option<Duration>,
+    max_io_retries: u32,
 }
 
 impl<T: Transport> std::fmt::Debug for TransportWireClient<T> {
@@ -83,19 +89,21 @@ impl<T: Transport> std::fmt::Debug for TransportWireClient<T> {
             .field("handshake_done", &self.handshake_done)
             .field("pending_messages", &self.pending_messages.len())
             .field("default_timeout", &self.default_timeout)
+            .field("max_io_retries", &self.max_io_retries)
             .finish_non_exhaustive()
     }
 }
 
 impl<T: Transport> TransportWireClient<T> {
     /// Create a new client wrapping the given transport.
-    pub fn new(transport: T) -> Self {
+    pub const fn new(transport: T) -> Self {
         Self {
             transport,
             request_id_counter: 0,
             handshake_done: false,
             pending_messages: VecDeque::new(),
             default_timeout: None,
+            max_io_retries: 0,
         }
     }
 
@@ -106,9 +114,35 @@ impl<T: Transport> TransportWireClient<T> {
 
     /// Set a default timeout applied to every `read_response` call.
     /// Without this, `read_response` waits indefinitely for a matching id.
-    pub fn with_default_timeout(mut self, timeout: Duration) -> Self {
+    #[must_use]
+    pub const fn with_default_timeout(mut self, timeout: Duration) -> Self {
         self.default_timeout = Some(timeout);
         self
+    }
+
+    /// Set the maximum number of retries for transient I/O errors during
+    /// `read_response`. Each retry waits exponentially longer
+    /// (`50ms * 2^attempt`).
+    #[must_use]
+    pub const fn with_max_io_retries(mut self, retries: u32) -> Self {
+        self.max_io_retries = if retries > 5 { 5 } else { retries };
+        self
+    }
+
+    async fn read_line_with_retry(&mut self) -> Result<Option<String>, WireError> {
+        let mut attempt = 0;
+        loop {
+            match self.transport.read_line().await {
+                Ok(result) => return Ok(result),
+                Err(ref e) if attempt < self.max_io_retries && is_transient_error(e) => {
+                    attempt += 1;
+                    let delay = Duration::from_millis(50 * 2_u64.pow(attempt));
+                    tracing::debug!(error = %e, attempt, ?delay, "transient transport read error, retrying");
+                    tokio::time::sleep(delay).await;
+                }
+                Err(e) => return Err(e),
+            }
+        }
     }
 }
 
@@ -151,6 +185,7 @@ impl<T: Transport> WireClient for TransportWireClient<T> {
         &mut self,
         expected_id: &str,
     ) -> Result<Res, WireError> {
+        let timeout = self.default_timeout;
         let fut = async {
             loop {
                 if let Some(idx) = self
@@ -165,7 +200,7 @@ impl<T: Transport> WireClient for TransportWireClient<T> {
                     return decode_raw_response(msg, expected_id);
                 }
 
-                let line = match self.transport.read_line().await? {
+                let line = match self.read_line_with_retry().await? {
                     Some(line) => line,
                     None => return Err(WireError::StreamClosed),
                 };
@@ -183,7 +218,7 @@ impl<T: Transport> WireClient for TransportWireClient<T> {
             }
         };
 
-        match self.default_timeout {
+        match timeout {
             Some(d) => tokio::time::timeout(d, fut)
                 .await
                 .map_err(|_| WireError::Timeout(d))?,
@@ -393,6 +428,13 @@ impl ChildProcessTransport {
             })
         });
 
+        tracing::info!(
+            kimi_binary,
+            ?work_dir,
+            ?session,
+            ?model,
+            "child process transport spawned"
+        );
         Ok(Self {
             child: Some(child),
             stdin: Some(stdin),
@@ -407,7 +449,10 @@ impl Transport for ChildProcessTransport {
     async fn read_line(&mut self) -> Result<Option<String>, WireError> {
         use tokio_stream::StreamExt;
         match self.stdout_reader.next().await {
-            Some(Ok(line)) => Ok(Some(line)),
+            Some(Ok(line)) => {
+                tracing::trace!(len = line.len(), "read line from child process transport");
+                Ok(Some(line))
+            }
             Some(Err(e)) => Err(WireError::Io(e.to_string())),
             None => Ok(None),
         }
@@ -418,10 +463,12 @@ impl Transport for ChildProcessTransport {
         stdin.write_all(line.as_bytes()).await?;
         stdin.write_all(b"\n").await?;
         stdin.flush().await?;
+        tracing::trace!(len = line.len(), "wrote line to child process transport");
         Ok(())
     }
 
     async fn shutdown(mut self) -> Result<(), WireError> {
+        tracing::info!("shutting down child process transport");
         // Close stdin so the child sees EOF.
         drop(self.stdin.take());
 
@@ -472,6 +519,7 @@ pub struct ChannelTransport {
 
 impl ChannelTransport {
     /// Create a new pair of connected transports.
+    #[must_use]
     pub fn pair() -> (Self, Self) {
         let (tx1, rx1) = tokio::sync::mpsc::unbounded_channel();
         let (tx2, rx2) = tokio::sync::mpsc::unbounded_channel();
