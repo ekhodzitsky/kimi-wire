@@ -134,10 +134,9 @@ impl RequestExt for Request {
                     .questions
                     .iter()
                     .map(|q| {
-                        q.options
-                            .first()
-                            .map(|o| serde_json::Value::String(o.label.clone()))
-                            .unwrap_or(serde_json::Value::Null)
+                        q.options.first().map_or(serde_json::Value::Null, |o| {
+                            serde_json::Value::String(o.label.clone())
+                        })
                     })
                     .collect();
                 serde_json::json!({

@@ -164,9 +164,8 @@ impl<T: Transport> WireClient for TransportWireClient<T> {
         if let Some(msg) = self.pending_messages.pop_front() {
             return Ok(msg);
         }
-        let line = match self.transport.read_line().await? {
-            Some(line) => line,
-            None => return Err(WireError::StreamClosed),
+        let Some(line) = self.transport.read_line().await? else {
+            return Err(WireError::StreamClosed);
         };
         serde_json::from_str(&line).map_err(WireError::from)
     }
@@ -200,9 +199,8 @@ impl<T: Transport> WireClient for TransportWireClient<T> {
                     return decode_raw_response(msg, expected_id);
                 }
 
-                let line = match self.read_line_with_retry().await? {
-                    Some(line) => line,
-                    None => return Err(WireError::StreamClosed),
+                let Some(line) = self.read_line_with_retry().await? else {
+                    return Err(WireError::StreamClosed);
                 };
                 let msg: RawWireMessage = serde_json::from_str(&line).map_err(WireError::from)?;
                 if msg.id.as_deref() == Some(expected_id) {
@@ -210,8 +208,7 @@ impl<T: Transport> WireClient for TransportWireClient<T> {
                 }
                 if self.pending_messages.len() >= MAX_PENDING_MESSAGES {
                     return Err(WireError::Internal(format!(
-                        "pending message buffer overflow ({} entries) waiting for id {:?}",
-                        MAX_PENDING_MESSAGES, expected_id
+                        "pending message buffer overflow ({MAX_PENDING_MESSAGES} entries) waiting for id {expected_id:?}"
                     )));
                 }
                 self.pending_messages.push_back(msg);
@@ -267,9 +264,8 @@ impl<T: Transport> WireClient for TransportWireClient<T> {
         };
         self.send_request(&req).await?;
 
-        let line = match self.transport.read_line().await? {
-            Some(line) => line,
-            None => return Err(WireError::StreamClosed),
+        let Some(line) = self.transport.read_line().await? else {
+            return Err(WireError::StreamClosed);
         };
 
         // Check for method-not-found error (-32601)
@@ -411,7 +407,7 @@ impl ChildProcessTransport {
                 loop {
                     tokio::select! {
                         biased;
-                        _ = stderr_cancel.cancelled() => break,
+                        () = stderr_cancel.cancelled() => break,
                         line = reader.next_line() => {
                             match line {
                                 Ok(Some(line)) => {
@@ -476,8 +472,7 @@ impl Transport for ChildProcessTransport {
         let grace = Duration::from_secs(3);
         if let Some(mut child) = self.child.take() {
             match tokio::time::timeout(grace, child.wait()).await {
-                Ok(Ok(_)) => {}
-                Ok(Err(_)) => {}
+                Ok(Ok(_) | Err(_)) => {}
                 Err(_) => {
                     // Best-effort kill after graceful shutdown timed out.
                     // Safe to ignore: child is already unresponsive.

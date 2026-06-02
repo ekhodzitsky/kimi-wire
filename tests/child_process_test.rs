@@ -33,6 +33,7 @@ fn make_mock_binary_with_script(
     (dir, path)
 }
 
+#[allow(clippy::unused_async)]
 async fn make_mock_binary() -> (tempfile::TempDir, std::path::PathBuf) {
     make_mock_binary_with_script(&mock_kimi_script(), "mock_kimi")
 }
@@ -122,6 +123,7 @@ exec cat >/dev/null
     .to_string()
 }
 
+#[allow(clippy::unused_async)]
 async fn make_graceful_mock_binary() -> (tempfile::TempDir, std::path::PathBuf) {
     make_mock_binary_with_script(&graceful_mock_kimi_script(), "graceful_mock_kimi")
 }
@@ -159,6 +161,7 @@ done
     .to_string()
 }
 
+#[allow(clippy::unused_async)]
 async fn make_unresponsive_binary() -> (tempfile::TempDir, std::path::PathBuf) {
     make_mock_binary_with_script(&unresponsive_mock_script(), "unresponsive_kimi")
 }

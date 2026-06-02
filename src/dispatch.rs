@@ -49,7 +49,10 @@ pub struct WireResponse {
 ///     }
 /// }).await
 /// # }
-/// ```
+/// # Errors
+///
+/// Returns [`WireError`] if reading from the client fails, the handler returns
+/// an error, or sending a response fails.
 pub async fn process_messages<C, F, Fut>(client: &mut C, mut handler: F) -> Result<(), WireError>
 where
     C: WireClient,

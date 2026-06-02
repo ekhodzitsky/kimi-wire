@@ -300,8 +300,7 @@ impl WireClient for InMemoryWireClient {
                         let mut pending = self.pending.lock().await;
                         if pending.len() >= MAX_PENDING_MESSAGES {
                             return Err(WireError::Internal(format!(
-                                "pending message buffer overflow ({} entries) waiting for id {:?}",
-                                MAX_PENDING_MESSAGES, expected_id
+                                "pending message buffer overflow ({MAX_PENDING_MESSAGES} entries) waiting for id {expected_id:?}"
                             )));
                         }
                         pending.push_back(other);

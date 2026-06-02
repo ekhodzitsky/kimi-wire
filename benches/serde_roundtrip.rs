@@ -1,5 +1,8 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use kimi_wire::protocol::*;
+use kimi_wire::protocol::{
+    ApprovalRequest, DisplayBlock, Event, InitializeParams, JsonRpcRequest, JsonRpcVersion,
+    Request, SourceKind, UserInput,
+};
 
 fn bench_event_turn_begin_roundtrip(c: &mut Criterion) {
     let event = Event::TurnBegin {
@@ -12,7 +15,7 @@ fn bench_event_turn_begin_roundtrip(c: &mut Criterion) {
         b.iter(|| {
             let json = serde_json::to_string(black_box(&event)).unwrap();
             let _back: Event = serde_json::from_str(black_box(&json)).unwrap();
-        })
+        });
     });
 }
 
@@ -35,7 +38,7 @@ fn bench_approval_request_roundtrip(c: &mut Criterion) {
         b.iter(|| {
             let json = serde_json::to_string(black_box(&request)).unwrap();
             let _back: Request = serde_json::from_str(black_box(&json)).unwrap();
-        })
+        });
     });
 }
 
@@ -52,7 +55,7 @@ fn bench_jsonrpc_request_roundtrip(c: &mut Criterion) {
             let json = serde_json::to_string(black_box(&req)).unwrap();
             let _back: JsonRpcRequest<InitializeParams> =
                 serde_json::from_str(black_box(&json)).unwrap();
-        })
+        });
     });
 }
 

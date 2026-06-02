@@ -446,7 +446,7 @@ async fn test_in_memory_client_pending_cap() {
     for i in 0..=MAX_PENDING_MESSAGES {
         let msg = RawWireMessage {
             jsonrpc: JsonRpcVersion,
-            id: Some(format!("msg-{}", i)),
+            id: Some(format!("msg-{i}")),
             method: None,
             params: None,
             result: Some(serde_json::json!(i)),
@@ -461,7 +461,6 @@ async fn test_in_memory_client_pending_cap() {
         .unwrap_err();
     assert!(
         matches!(&err, WireError::Internal(msg) if msg.contains("buffer overflow")),
-        "expected buffer overflow error, got {:?}",
-        err
+        "expected buffer overflow error, got {err:?}"
     );
 }

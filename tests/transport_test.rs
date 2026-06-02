@@ -464,7 +464,7 @@ async fn test_pending_messages_buffer_cap_returns_internal_error() {
     for i in 0..=MAX_PENDING_MESSAGES {
         let msg = RawWireMessage {
             jsonrpc: JsonRpcVersion,
-            id: Some(format!("msg-{}", i)),
+            id: Some(format!("msg-{i}")),
             method: None,
             params: None,
             result: Some(serde_json::json!(i)),
@@ -482,8 +482,7 @@ async fn test_pending_messages_buffer_cap_returns_internal_error() {
         .unwrap_err();
     assert!(
         matches!(&err, WireError::Internal(msg) if msg.contains("buffer overflow")),
-        "expected buffer overflow error, got {:?}",
-        err
+        "expected buffer overflow error, got {err:?}"
     );
 }
 
@@ -513,7 +512,7 @@ impl kimi_wire::transport::Transport for MockTransport {
 fn test_transport_wire_client_debug() {
     let transport = MockTransport { responses: vec![] };
     let client = TransportWireClient::new(transport);
-    let s = format!("{:?}", client);
+    let s = format!("{client:?}");
     assert!(s.contains("TransportWireClient"));
 }
 

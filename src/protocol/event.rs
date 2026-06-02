@@ -104,7 +104,7 @@ pub enum Event {
     ///
     /// Added in Wire protocol v1.9.
     BtwBegin {
-        /// Unique ID to pair with the corresponding BtwEnd.
+        /// Unique ID to pair with the corresponding `BtwEnd`.
         id: String,
         /// The user's original side question text.
         question: String,
@@ -113,7 +113,7 @@ pub enum Event {
     ///
     /// Added in Wire protocol v1.9.
     BtwEnd {
-        /// Unique ID matching the corresponding BtwBegin.
+        /// Unique ID matching the corresponding `BtwBegin`.
         id: String,
         /// The LLM's response text, or null if it failed.
         response: Option<String>,
@@ -553,24 +553,21 @@ impl Serialize for Event {
 impl<'de> Deserialize<'de> for Event {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         let envelope = EventEnvelope::deserialize(deserializer)?;
-        match envelope.type_name.as_str() {
-            "ContentPart" => {
-                let part: ContentPart =
-                    serde_json::from_value(envelope.payload).map_err(serde::de::Error::custom)?;
-                Ok(Event::ContentPart(part))
+        if envelope.type_name.as_str() == "ContentPart" {
+            let part: ContentPart =
+                serde_json::from_value(envelope.payload).map_err(serde::de::Error::custom)?;
+            Ok(Event::ContentPart(part))
+        } else {
+            let mut value = envelope.payload;
+            if let Some(obj) = value.as_object_mut() {
+                obj.insert(
+                    "type".to_string(),
+                    serde_json::Value::String(envelope.type_name),
+                );
             }
-            _ => {
-                let mut value = envelope.payload;
-                if let Some(obj) = value.as_object_mut() {
-                    obj.insert(
-                        "type".to_string(),
-                        serde_json::Value::String(envelope.type_name),
-                    );
-                }
-                let flat: FlatEvent =
-                    serde_json::from_value(value).map_err(serde::de::Error::custom)?;
-                Ok(Event::from(flat))
-            }
+            let flat: FlatEvent =
+                serde_json::from_value(value).map_err(serde::de::Error::custom)?;
+            Ok(Event::from(flat))
         }
     }
 }

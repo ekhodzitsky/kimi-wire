@@ -7,7 +7,7 @@ use super::event::HookAction;
 ///
 /// The client must respond before the agent can continue execution.
 ///
-/// Wire type names are PascalCase (e.g. `ApprovalRequest`).
+/// Wire type names are `PascalCase` (e.g. `ApprovalRequest`).
 ///
 /// Serialization follows the official wire envelope format:
 /// `{"type": "ApprovalRequest", "payload": {"id": ...}}`.

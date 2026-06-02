@@ -300,14 +300,14 @@ pub enum SteerStatus {
 // SetPlanMode
 // ============================================================================
 
-/// SetPlanMode request parameters.
+/// `SetPlanMode` request parameters.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct SetPlanModeParams {
     /// Whether to enable plan mode.
     pub enabled: bool,
 }
 
-/// SetPlanMode response result.
+/// `SetPlanMode` response result.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct SetPlanModeResult {
     /// Operation status.
@@ -316,7 +316,7 @@ pub struct SetPlanModeResult {
     pub plan_mode: bool,
 }
 
-/// SetPlanMode operation status.
+/// `SetPlanMode` operation status.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(rename_all = "snake_case")]
 #[non_exhaustive]

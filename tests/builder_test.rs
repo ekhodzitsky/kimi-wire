@@ -193,10 +193,11 @@ fn test_initialize_params_builder_chain() {
 // ============================================================================
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn test_event_type_name() {
     assert_eq!(
         Event::TurnBegin {
-            user_input: UserInput::Text("".to_string())
+            user_input: UserInput::Text(String::new())
         }
         .type_name(),
         "TurnBegin"
@@ -220,16 +221,16 @@ fn test_event_type_name() {
     );
     assert_eq!(
         Event::ContentPart(ContentPart::Text(TextPart {
-            text: "".to_string()
+            text: String::new()
         }))
         .type_name(),
         "ContentPart"
     );
     assert_eq!(
         Event::ToolCall {
-            id: "".to_string(),
+            id: String::new(),
             function: ToolCallFunction {
-                name: "".to_string(),
+                name: String::new(),
                 arguments: None
             },
             extras: None
@@ -246,7 +247,7 @@ fn test_event_type_name() {
     );
     assert_eq!(
         Event::ToolResult {
-            tool_call_id: "".to_string(),
+            tool_call_id: String::new(),
             return_value: ToolReturnValue::new("")
         }
         .type_name(),
@@ -254,7 +255,7 @@ fn test_event_type_name() {
     );
     assert_eq!(
         Event::ApprovalResponse {
-            request_id: "".to_string(),
+            request_id: String::new(),
             response: ApprovalResponseKind::Approve,
             feedback: None
         }
@@ -267,7 +268,7 @@ fn test_event_type_name() {
             agent_id: None,
             subagent_type: None,
             event: SubagentEventPayload {
-                type_name: "".to_string(),
+                type_name: String::new(),
                 payload: serde_json::json!({})
             }
         }
@@ -276,23 +277,23 @@ fn test_event_type_name() {
     );
     assert_eq!(
         Event::SteerInput {
-            user_input: UserInput::Text("".to_string())
+            user_input: UserInput::Text(String::new())
         }
         .type_name(),
         "SteerInput"
     );
     assert_eq!(
         Event::PlanDisplay {
-            content: "".to_string(),
-            file_path: "".to_string()
+            content: String::new(),
+            file_path: String::new()
         }
         .type_name(),
         "PlanDisplay"
     );
     assert_eq!(
         Event::HookTriggered {
-            event: "".to_string(),
-            target: "".to_string(),
+            event: String::new(),
+            target: String::new(),
             hook_count: 0
         }
         .type_name(),
@@ -300,10 +301,10 @@ fn test_event_type_name() {
     );
     assert_eq!(
         Event::HookResolved {
-            event: "".to_string(),
-            target: "".to_string(),
+            event: String::new(),
+            target: String::new(),
             action: HookAction::Allow,
-            reason: "".to_string(),
+            reason: String::new(),
             duration_ms: 0
         }
         .type_name(),
