@@ -173,11 +173,9 @@ fn test_toolcall_wire_envelope_format() {
 
 #[test]
 fn test_tool_output_parts_roundtrip() {
-    let output = ToolOutput::Parts(vec![
-        ContentPart::Text(TextPart {
-            text: "hello".to_string(),
-        }),
-    ]);
+    let output = ToolOutput::Parts(vec![ContentPart::Text(TextPart {
+        text: "hello".to_string(),
+    })]);
     let json = serde_json::to_string(&output).unwrap();
     let de: ToolOutput = serde_json::from_str(&json).unwrap();
     assert_eq!(de, output);

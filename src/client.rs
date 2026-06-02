@@ -33,7 +33,9 @@ pub trait WireClient: Send {
     ) -> impl Future<Output = Result<(), WireError>> + Send;
 
     /// Read the next incoming raw wire message.
-    fn read_raw_message(&mut self) -> impl Future<Output = Result<crate::protocol::RawWireMessage, WireError>> + Send;
+    fn read_raw_message(
+        &mut self,
+    ) -> impl Future<Output = Result<crate::protocol::RawWireMessage, WireError>> + Send;
 
     /// Read the next incoming raw wire message with a timeout.
     fn read_raw_message_timeout(
@@ -69,7 +71,10 @@ pub trait WireClient: Send {
     fn shutdown(self) -> impl Future<Output = Result<(), WireError>> + Send;
 
     /// Send a prompt and wait for the result.
-    fn prompt(&mut self, user_input: impl Into<UserInput> + Send) -> impl Future<Output = Result<PromptResult, WireError>> + Send {
+    fn prompt(
+        &mut self,
+        user_input: impl Into<UserInput> + Send,
+    ) -> impl Future<Output = Result<PromptResult, WireError>> + Send {
         async move {
             let id = self.start_prompt(user_input).await?;
             self.read_response(&id).await
@@ -77,7 +82,10 @@ pub trait WireClient: Send {
     }
 
     /// Send a prompt without waiting for the result.
-    fn start_prompt(&mut self, user_input: impl Into<UserInput> + Send) -> impl Future<Output = Result<String, WireError>> + Send {
+    fn start_prompt(
+        &mut self,
+        user_input: impl Into<UserInput> + Send,
+    ) -> impl Future<Output = Result<String, WireError>> + Send {
         async move {
             let id = self.next_id();
             let req = JsonRpcRequest {
@@ -109,7 +117,10 @@ pub trait WireClient: Send {
     }
 
     /// Steer the current turn with additional user input.
-    fn steer(&mut self, user_input: impl Into<UserInput> + Send) -> impl Future<Output = Result<SteerResult, WireError>> + Send {
+    fn steer(
+        &mut self,
+        user_input: impl Into<UserInput> + Send,
+    ) -> impl Future<Output = Result<SteerResult, WireError>> + Send {
         async move {
             let id = self.next_id();
             let req = JsonRpcRequest {
@@ -269,12 +280,10 @@ impl WireClient for InMemoryWireClient {
                         .position(|msg| msg.id.as_deref() == Some(expected_id))
                 };
                 if let Some(idx) = idx {
-                    let msg = self
-                        .pending
-                        .lock()
-                        .await
-                        .remove(idx)
-                        .ok_or_else(|| WireError::Internal("pending index invalid".to_string()))?;
+                    let msg =
+                        self.pending.lock().await.remove(idx).ok_or_else(|| {
+                            WireError::Internal("pending index invalid".to_string())
+                        })?;
                     return decode_response(msg, expected_id);
                 }
 
@@ -315,7 +324,10 @@ impl WireClient for InMemoryWireClient {
             id: id.to_string(),
             result,
         };
-        let line = format!("{}\n", serde_json::to_string(&resp).map_err(WireError::from)?);
+        let line = format!(
+            "{}\n",
+            serde_json::to_string(&resp).map_err(WireError::from)?
+        );
         self.outgoing
             .lock()
             .await
@@ -323,12 +335,7 @@ impl WireClient for InMemoryWireClient {
         Ok(())
     }
 
-    async fn send_error(
-        &mut self,
-        id: &str,
-        code: i32,
-        message: &str,
-    ) -> Result<(), WireError> {
+    async fn send_error(&mut self, id: &str, code: i32, message: &str) -> Result<(), WireError> {
         let resp = crate::protocol::JsonRpcErrorResponse {
             jsonrpc: crate::protocol::JsonRpcVersion::V2,
             id: id.to_string(),
@@ -338,7 +345,10 @@ impl WireClient for InMemoryWireClient {
                 data: None,
             },
         };
-        let line = format!("{}\n", serde_json::to_string(&resp).map_err(WireError::from)?);
+        let line = format!(
+            "{}\n",
+            serde_json::to_string(&resp).map_err(WireError::from)?
+        );
         self.outgoing
             .lock()
             .await

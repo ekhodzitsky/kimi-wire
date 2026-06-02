@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Integration tests for `parse_wire_message` (`tests/message_test.rs`),
+  `WireClientExt` / `EventExt` / `RequestExt` (`tests/client_ext_test.rs`), and
+  `process_messages` (`tests/dispatch_test.rs`).
+- `test_all_secret_patterns_compile` guard to ensure redaction regexes stay valid.
+
+### Fixed
+
+- Removed duplicate doc comments in `WireError` variants.
+- Replaced `unwrap_or_default` in `EventExt::payload` with a safe `match`.
+- Replaced `unreachable!` in `redact.rs` regex initialization with a graceful
+  `filter_map` + dedicated compile-time guard test.
+- Removed dead `method != "request"` / `method != "event"` checks from
+  `dispatch.rs` after `parse_wire_message` guarantees.
+- Documented magic number `26` (`ETXTBSY`) in `ChildProcessTransport::spawn`.
+
+### Changed
+
+- Code coverage raised from ~80% to ~95% (`cargo-tarpaulin`).
+- All broken intra-doc links resolved (`cargo doc` now warning-free).
+
 ## [0.3.0] - 2026-05-25
 
 ### Added

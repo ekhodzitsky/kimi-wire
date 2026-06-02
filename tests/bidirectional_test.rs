@@ -95,8 +95,7 @@ async fn read_request_with_rpc_id(
 ) -> (Request, String) {
     let raw = client.read_raw_message().await.unwrap();
     assert_eq!(raw.method.as_deref(), Some("request"));
-    let request: Request =
-        serde_json::from_value(raw.params.expect("params present")).unwrap();
+    let request: Request = serde_json::from_value(raw.params.expect("params present")).unwrap();
     (request, raw.id.expect("id present"))
 }
 
@@ -251,9 +250,7 @@ async fn test_bidirectional_question_request_response_flow() {
     });
 
     let request = read_request(&mut client).await;
-    assert!(
-        matches!(request, Request::QuestionRequest(ref qr) if qr.id == "question-req-1")
-    );
+    assert!(matches!(request, Request::QuestionRequest(ref qr) if qr.id == "question-req-1"));
 
     let response = QuestionResponse {
         request_id: "question-req-1".to_string(),
@@ -326,9 +323,7 @@ async fn test_bidirectional_request_with_send_error() {
     });
 
     let request = read_request(&mut client).await;
-    assert!(
-        matches!(request, Request::ApprovalRequest(ref ar) if ar.id == "approval-req-error")
-    );
+    assert!(matches!(request, Request::ApprovalRequest(ref ar) if ar.id == "approval-req-error"));
 
     client
         .send_error("req-err", -32000, "user rejected approval")

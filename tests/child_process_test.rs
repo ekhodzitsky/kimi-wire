@@ -41,14 +41,9 @@ async fn make_mock_binary() -> (tempfile::TempDir, std::path::PathBuf) {
 async fn test_child_process_transport_spawn_and_roundtrip() {
     let (_dir, bin) = make_mock_binary().await;
 
-    let mut transport = ChildProcessTransport::spawn(
-        bin.to_str().unwrap(),
-        None,
-        None,
-        None,
-    )
-    .await
-    .unwrap();
+    let mut transport = ChildProcessTransport::spawn(bin.to_str().unwrap(), None, None, None)
+        .await
+        .unwrap();
 
     // Write a JSON-RPC line
     let req = r#"{"jsonrpc":"2.0","id":"1","method":"prompt","params":{}}"#;
@@ -65,14 +60,9 @@ async fn test_child_process_transport_spawn_and_roundtrip() {
 async fn test_child_process_transport_drop_is_clean() {
     let (_dir, bin) = make_mock_binary().await;
 
-    let transport = ChildProcessTransport::spawn(
-        bin.to_str().unwrap(),
-        None,
-        None,
-        None,
-    )
-    .await
-    .unwrap();
+    let transport = ChildProcessTransport::spawn(bin.to_str().unwrap(), None, None, None)
+        .await
+        .unwrap();
 
     // Drop should cancel the stderr task and kill the child process.
     drop(transport);
@@ -82,14 +72,9 @@ async fn test_child_process_transport_drop_is_clean() {
 async fn test_child_process_transport_read_line_returns_none_after_child_exit() {
     let (_dir, bin) = make_mock_binary().await;
 
-    let mut transport = ChildProcessTransport::spawn(
-        bin.to_str().unwrap(),
-        None,
-        None,
-        None,
-    )
-    .await
-    .unwrap();
+    let mut transport = ChildProcessTransport::spawn(bin.to_str().unwrap(), None, None, None)
+        .await
+        .unwrap();
 
     // Write a line so the mock echoes and then exits when stdin closes.
     transport.write_line("{}").await.unwrap();
@@ -126,14 +111,9 @@ async fn make_graceful_mock_binary() -> (tempfile::TempDir, std::path::PathBuf) 
 async fn test_child_process_transport_graceful_shutdown_exits_within_grace_period() {
     let (_dir, bin) = make_graceful_mock_binary().await;
 
-    let transport = ChildProcessTransport::spawn(
-        bin.to_str().unwrap(),
-        None,
-        None,
-        None,
-    )
-    .await
-    .unwrap();
+    let transport = ChildProcessTransport::spawn(bin.to_str().unwrap(), None, None, None)
+        .await
+        .unwrap();
 
     let start = std::time::Instant::now();
     transport.shutdown().await.unwrap();
@@ -168,14 +148,9 @@ async fn make_unresponsive_binary() -> (tempfile::TempDir, std::path::PathBuf) {
 async fn test_child_process_transport_graceful_shutdown_kills_unresponsive_child() {
     let (_dir, bin) = make_unresponsive_binary().await;
 
-    let transport = ChildProcessTransport::spawn(
-        bin.to_str().unwrap(),
-        None,
-        None,
-        None,
-    )
-    .await
-    .unwrap();
+    let transport = ChildProcessTransport::spawn(bin.to_str().unwrap(), None, None, None)
+        .await
+        .unwrap();
 
     let start = std::time::Instant::now();
     transport.shutdown().await.unwrap();
