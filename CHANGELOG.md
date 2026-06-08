@@ -7,7 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-06-08
+
+### Changed
+
+- **MSRV raised from 1.80 to 1.85** — enables `proptest` 1.11 and newer language features.
+- `proptest` dev-dependency bumped from 1.6.0 to 1.11.0 (was previously pinned for MSRV 1.80).
+
 ## [0.4.2] - 2026-06-08
+
+### Changed
+
+- CI: bump `codecov/codecov-action` from 6 to 7 in `ci.yml` (#26).
 
 ### Changed
 
@@ -143,6 +154,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optional secret redaction via `redact_secrets` and `scrub_secret_patterns`.
 - Comprehensive serde round-trip tests.
 
+[0.5.0]: https://github.com/ekhodzitsky/kimi-wire/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/ekhodzitsky/kimi-wire/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/ekhodzitsky/kimi-wire/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/ekhodzitsky/kimi-wire/compare/v0.3.0...v0.4.0

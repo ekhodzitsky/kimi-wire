@@ -5,7 +5,7 @@
 [![crates.io](https://img.shields.io/crates/v/kimi-wire.svg)](https://crates.io/crates/kimi-wire)
 [![docs.rs](https://docs.rs/kimi-wire/badge.svg)](https://docs.rs/kimi-wire)
 [![codecov](https://codecov.io/gh/ekhodzitsky/kimi-wire/branch/main/graph/badge.svg)](https://codecov.io/gh/ekhodzitsky/kimi-wire)
-[![MSRV](https://img.shields.io/badge/MSRV-1.80-orange)](https://github.com/ekhodzitsky/kimi-wire/blob/main/Cargo.toml#L11)
+[![MSRV](https://img.shields.io/badge/MSRV-1.85-orange)](https://github.com/ekhodzitsky/kimi-wire/blob/main/Cargo.toml#L11)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Typed Rust client for the [Kimi Code CLI Wire protocol](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/wire-protocol.html).
@@ -25,7 +25,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-kimi-wire = "0.4"
+kimi-wire = "0.5"
 ```
 
 ### Mock client (testing)
@@ -88,7 +88,7 @@ This crate targets **Wire protocol version 1.10** as documented by Moonshot AI. 
 
 ## MSRV
 
-Rust **1.80** (required for `std::sync::LazyLock`).
+Rust **1.85** (required for `std::sync::LazyLock` and `proptest` 1.11 compatibility).
 
 ## Changelog
 

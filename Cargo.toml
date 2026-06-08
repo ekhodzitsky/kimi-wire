@@ -1,6 +1,6 @@
 [package]
 name = "kimi-wire"
-version = "0.4.2"
+version = "0.5.0"
 edition = "2021"
 authors = ["Evgeny Khodzitsky"]
 description = "Typed Rust client for the Kimi Code CLI Wire protocol."
@@ -8,7 +8,7 @@ license = "MIT"
 repository = "https://github.com/ekhodzitsky/kimi-wire"
 keywords = ["kimi", "wire", "jsonrpc", "cli", "agent"]
 categories = ["network-programming", "command-line-utilities"]
-rust-version = "1.80"
+rust-version = "1.85"
 exclude = [
     ".git",
     ".omc",
@@ -43,7 +43,7 @@ tokio-util = { version = "0.7", features = ["codec"] }
 tokio-stream = "0.1"
 tracing = "0.1"
 tracing-subscriber = "0.3"
-proptest = "1.6"
+proptest = "1.11"
 criterion = { version = "0.5", default-features = false, features = ["async_tokio", "html_reports"] }
 tempfile = "3.27"
 
