@@ -84,11 +84,6 @@ type HooksInfo struct {
 	Configured      map[string]uint32 `json:"configured"`
 }
 
-// UserInput represents user input text.
-type UserInput struct {
-	Text string `json:"text"`
-}
-
 // PromptParams is the parameter for the prompt method.
 type PromptParams struct {
 	UserInput UserInput `json:"user_input"`
