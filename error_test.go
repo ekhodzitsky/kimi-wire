@@ -13,6 +13,13 @@ func TestWireError_Error(t *testing.T) {
 	}
 }
 
+func TestWireError_ValueReceiver(t *testing.T) {
+	var err error = WireError{Kind: ErrStreamClosed, Message: "closed"}
+	if err.Error() != "closed" {
+		t.Fatal("value type does not satisfy error interface")
+	}
+}
+
 func TestWireError_As(t *testing.T) {
 	err := &WireError{Kind: ErrTimeout, Message: "timeout", Duration: time.Second}
 	var target *WireError

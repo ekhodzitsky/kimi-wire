@@ -30,4 +30,4 @@ type WireError struct {
 	Duration time.Duration
 }
 
-func (e *WireError) Error() string { return e.Message }
+func (e WireError) Error() string { return e.Message }
